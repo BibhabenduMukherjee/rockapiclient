@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* --- New Styles for the "Cooler" Sidebar --- */
+
+/* Gradient background for the Sider */
+.cool-sidebar {
+  background: linear-gradient(180deg, #242d60 0%, #766c33 100%);
+}
+
+.cool-sidebar .ant-tree-treenode:hover::before {
+  background-color: transparent !important;
+}
+
+/* Style for the header within the Sider */
+.cool-sidebar-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+/* Custom styles for the Tree component on the new background */
+.cool-tree {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px;
+}
+.cool-tree .ant-tree-treenode {
+  color: #e0e0e0;
+}
+.cool-tree .ant-tree-treenode:hover::before,
+.cool-tree .ant-tree-treenode-selected::before {
+  background-color: transparent !important;
+}
+.cool-tree .ant-tree-switcher {
+  color: rgba(255, 255, 255, 0.65);
+}

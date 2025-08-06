@@ -1,0 +1,71 @@
+const { app, BrowserWindow,ipcMain } = require('electron');
+const path = require('path');
+const { placeholder } = require('./config/placeholder');
+const fs = require('fs');
+
+const userDataPath = app.getPath('userData');
+const collectionsFilePath = path.join(userDataPath, 'collections.json');
+
+if (process.env.NODE_ENV === 'development') {
+  try {   
+    require('electron-reloader')(module);
+  } catch {}  
+}
+function createWindow() {
+  const mainWindow = new BrowserWindow({
+    width: placeholder.window.width || 800,
+    height: placeholder.window.height || 600,
+    title: placeholder.window.title || 'Rock API Client',
+    minWidth : placeholder.window.minWidth,
+    minHeight : placeholder.window.minHeight,
+    resizable: placeholder.window.resizable || true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+  mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+  mainWindow.webContents.openDevTools(); // Open DevTools for debugging
+}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+
+// Listens for the 'save-collections' event from the preload script.
+ipcMain.handle('save-collections', (event, collections) => {
+  try {
+    // Stringify the collections array with pretty-printing (2-space indentation).
+    const data = JSON.stringify(collections, null, 2);
+    // Write the data to the collections.json file.
+    fs.writeFileSync(collectionsFilePath, data);
+  } catch (error) {
+    console.error('Failed to save collections:', error);
+  }
+});
+
+// Listens for the 'load-collections' event from the preload script.
+ipcMain.handle('load-collections', () => {
+  try {
+    // Check if the collections file exists.
+    if (fs.existsSync(collectionsFilePath)) {
+      const data = fs.readFileSync(collectionsFilePath, 'utf-8');
+      // Parse the JSON data and return it to the frontend.
+      return JSON.parse(data);
+    }
+    return []; // If the file doesn't exist, return an empty array.
+  } catch (error) {
+    console.error('Failed to load collections:', error);
+    return []; // If there's an error reading/parsing, return an empty array.
+  }
+});

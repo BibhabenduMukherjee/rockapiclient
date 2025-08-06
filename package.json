@@ -1,0 +1,80 @@
+{
+  "name": "rock-api-client",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development --watch & electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "electron-rebuild",
+    "lint": "eslint .",
+    "pretest": "npm run lint"
+  },
+  "build": {
+    "appId": "com.codeaum.rockapiclient",
+    "productName": "RockApiClient",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "electron": "^28.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^8.0.0",
+    "eslint-plugin-import": "^2.25.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "html-webpack-plugin": "^5.6.3",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.1.1",
+    "prettier": "^2.5.1",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.9.2",
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@babel/preset-typescript": "^7.27.1",
+    "antd": "^5.26.7",
+    "dotenv": "^17.2.1",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.0",
+    "electron-reloader": "^1.2.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
+}
