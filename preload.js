@@ -15,4 +15,13 @@ contextBridge.exposeInMainWorld('electron', {
    * @returns {Promise<object[]>} - The array of collections.
    */
   loadCollections: () => ipcRenderer.invoke('load-collections'),
+
+  /**
+   * Saves request history items array.
+   */
+  saveHistory: (historyItems) => ipcRenderer.invoke('save-history', historyItems),
+  /**
+   * Loads saved request history items array.
+   */
+  loadHistory: () => ipcRenderer.invoke('load-history'),
 });
