@@ -18,15 +18,13 @@ code {
     monospace;
 }
 
+
 /* --- New Styles for the "Cooler" Sidebar --- */
 
 /* Gradient background for the Sider */
 .cool-sidebar {
-  background: linear-gradient(180deg, #242d60 0%, #766c33 100%);
-}
-
-.cool-sidebar .ant-tree-treenode:hover::before {
-  background-color: transparent !important;
+  background: linear-gradient(180deg, #1E1E1E 0%, #1f2131 100%);
+  color: antiquewhite;
 }
 
 /* Style for the header within the Sider */
@@ -36,19 +34,80 @@ code {
   color: #e0e0e0;
 }
 
-/* Custom styles for the Tree component on the new background */
+/* --- Custom styles for the Tree component --- */
 .cool-tree {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 10px;
+  /* The background should be transparent to show the sidebar gradient */
+  background-color: transparent; 
+  color: #41cc53;
+  padding: 8px;
 }
+
+
+
 .cool-tree .ant-tree-treenode {
-  color: #e0e0e0;
+  /* Add padding and rounded corners for a modern look */
+  padding: 2px 4px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
 }
-.cool-tree .ant-tree-treenode:hover::before,
-.cool-tree .ant-tree-treenode-selected::before {
-  background-color: transparent !important;
+  
+/* Style for the node when you HOVER over it */
+.cool-tree .ant-tree-treenode:hover {
+  /* A subtle, semi-transparent white for hover */
+  background-color: rgba(170, 165, 165, 0.25) !important;
+
 }
+
+/* NEW: Specific rule for the COLOR of text and icons on HOVER */
+.cool-tree .ant-tree-treenode:hover .ant-tree-title,
+.cool-tree .ant-tree-treenode:hover .ant-tree-iconEle,
+.cool-tree .ant-tree-treenode:hover .ant-tree-switcher {
+  color: rgba(241, 122, 247, 0.907) !important;
+}
+
+/* Style for the node when it is SELECTED */
+.cool-tree .ant-tree-treenode-selected {
+  /* A slightly more opaque white for selection */
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+
+
+/* Style for the expand/collapse arrow */
 .cool-tree .ant-tree-switcher {
   color: rgba(255, 255, 255, 0.65);
+}
+.cool-tree .ant-tree-treenode-selected .ant-tree-title,
+.cool-tree .ant-tree-treenode-selected .ant-tree-iconEle,
+.cool-tree .ant-tree-treenode-selected .ant-tree-switcher {
+color: rgba(241, 122, 247, 0.907) !important;
+}
+
+
+/* Styles for the new sidebar tabs */
+.sidebar-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style for the tab navigation bar */
+.sidebar-tabs .ant-tabs-nav {
+  margin-bottom: 0 !important; /* Remove space below the nav bar */
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-tabs .ant-tabs-tab {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sidebar-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #ffffff !important;
+}
+
+/* Make the tab content fill the remaining space */
+.sidebar-tabs .ant-tabs-content-holder {
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling for long lists */
 }
