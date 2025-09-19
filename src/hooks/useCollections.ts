@@ -10,7 +10,6 @@ export function useCollections() {
   // On initial mount, load collections from the backend.
   useEffect(() => {
     const loadData = async () => {
-      // FIX: Check if the electron API is available on the window object.
       // @ts-ignore
       if (window.electron) {
         try {
@@ -35,8 +34,9 @@ export function useCollections() {
   // When the `collections` state changes, save it back to the file.
   useEffect(() => {
     // We don't want to save during the initial loading phase.
-    // FIX: Also check if the electron API is available.
+    // @ts-ignore
     if (!loading && window.electron) {
+      // @ts-ignore
       window.electron.saveCollections(collections);
     }
   }, [collections, loading]);
@@ -95,5 +95,22 @@ export function useCollections() {
     }
   };
 
-  return { collections, loading, addCollection, addRequest, renameNode, deleteNode };
+  const updateRequest = (
+    collectionKey: string,
+    requestKey: string,
+    updates: Partial<ApiRequest>
+  ) => {
+    setCollections(current =>
+      current.map(c =>
+        c.key === collectionKey
+          ? {
+              ...c,
+              requests: c.requests.map(r => (r.key === requestKey ? { ...r, ...updates } : r)),
+            }
+          : c
+      )
+    );
+  };
+
+  return { collections, loading, addCollection, addRequest, renameNode, deleteNode, updateRequest };
 }
