@@ -5,6 +5,9 @@ export interface ApiRequest {
   title: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
+  params?: Record<string, string>;
+  headers?: Record<string, string>;
+  body?: string;
 }
 
 export interface Collection {
@@ -19,4 +22,18 @@ export interface TreeNode {
   title: string;
   type: 'collection' | 'request';
   collectionKey?: string; // Only present for requests
+}
+
+export interface HistoryItem {
+  id: string;
+  method: ApiRequest['method'];
+  url: string;
+  status: number | null;
+  durationMs: number;
+  timestamp: number;
+  request: Pick<ApiRequest, 'params' | 'headers' | 'body'>;
+  response: {
+    headers: Record<string, string>;
+    body: string;
+  } | null;
 }

@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const userDataPath = app.getPath('userData');
 const collectionsFilePath = path.join(userDataPath, 'collections.json');
+const historyFilePath = path.join(userDataPath, 'history.json');
 
 if (process.env.NODE_ENV === 'development') {
   try {   
@@ -21,6 +22,7 @@ function createWindow() {
     resizable: placeholder.window.resizable || true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,
     },
   });
   mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
@@ -67,5 +69,28 @@ ipcMain.handle('load-collections', () => {
   } catch (error) {
     console.error('Failed to load collections:', error);
     return []; // If there's an error reading/parsing, return an empty array.
+  }
+});
+
+// History persistence handlers
+ipcMain.handle('save-history', (event, historyItems) => {
+  try {
+    const data = JSON.stringify(historyItems, null, 2);
+    fs.writeFileSync(historyFilePath, data);
+  } catch (error) {
+    console.error('Failed to save history:', error);
+  }
+});
+
+ipcMain.handle('load-history', () => {
+  try {
+    if (fs.existsSync(historyFilePath)) {
+      const data = fs.readFileSync(historyFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to load history:', error);
+    return [];
   }
 });
