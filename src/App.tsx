@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Layout, Input, Select, Button, Flex, Tabs, Modal, message, List, Tag, Collapse, Card, Typography, Space } from 'antd';
 import { ExperimentOutlined, FolderOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons';
 import { useCollections } from './hooks/useCollections';
+import { useEnvironments, substituteTemplate } from './hooks/useEnvironments';
 import SidebarCollection from './components/Sidebar';
+import HeadersTab from './components/HeadersTab';
+import AuthorizationTab, { AuthConfig } from './components/AuthorizationTab';
+import BodyTab, { BodyType, RawBodyType, FormDataItem } from './components/BodyTab';
 import { ApiRequest, HistoryItem } from './types'
 
 const { Content, Sider, Header } = Layout;
@@ -16,21 +20,71 @@ function App() {
   const [url, setUrl] = useState('');
   const [activeTab, setActiveTab] = useState('collections');
   const [paramsJson, setParamsJson] = useState<string>('{}');
-  const [headersJson, setHeadersJson] = useState<string>('{}');
-  const [body, setBody] = useState<string>('');
+  
+  // Headers state
+  const [headers, setHeaders] = useState<Array<{key: string, value: string, enabled: boolean}>>([]);
+  
+  // Authorization state
+  const [auth, setAuth] = useState<AuthConfig>({
+    type: 'none',
+    apiKey: { key: '', value: '', addTo: 'header' },
+    bearer: { token: '' },
+    basic: { username: '', password: '' },
+    jwt: { token: '' }
+  });
+  
+  // Body state
+  const [bodyType, setBodyType] = useState<BodyType>('none');
+  const [rawBodyType, setRawBodyType] = useState<RawBodyType>('json');
+  const [rawBody, setRawBody] = useState<string>('');
+  const [formData, setFormData] = useState<FormDataItem[]>([]);
+  const [urlEncoded, setUrlEncoded] = useState<FormDataItem[]>([]);
   const [responseText, setResponseText] = useState<string>('');
   const [responseMeta, setResponseMeta] = useState<{ status: number | null; durationMs: number; headers: Record<string, string>; size: number }>({ status: null, durationMs: 0, headers: {}, size: 0 });
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Validation helpers
+  const paramsError = useMemo(() => {
+    try { JSON.parse(paramsJson || '{}'); return null; } catch (e:any) { return 'Invalid JSON'; }
+  }, [paramsJson]);
+  
+  const bodyError = useMemo(() => {
+    if (bodyType === 'raw' && rawBodyType === 'json' && rawBody) {
+      try {
+        JSON.parse(rawBody);
+        return null;
+      } catch {
+        return 'Invalid JSON';
+      }
+    }
+    return null;
+  }, [bodyType, rawBodyType, rawBody]);
+  
+  const hasValidationError = !!paramsError || !!bodyError || !url;
 
 
   // The custom hook provides all data and functions for managing collections
   const { collections, loading, addCollection, addRequest, renameNode, deleteNode, updateRequest } = useCollections();
+  
+  // Environment management
+  const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
 
   // State for the "Add Collection" modal, which is simple enough to keep in App.tsx
   const [isAddCollectionModalVisible, setIsAddCollectionModalVisible] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<ApiRequest | null>(null);
+  
+  // Environment modal states
+  const [isEnvModalVisible, setIsEnvModalVisible] = useState(false);
+  const [editingEnv, setEditingEnv] = useState<string | null>(null);
+  const [envName, setEnvName] = useState('');
+  const [envVars, setEnvVars] = useState<Record<string, string>>({});
+  
+  // Code generation modal
+  const [isCodeGenModalVisible, setIsCodeGenModalVisible] = useState(false);
+  const [codeGenType, setCodeGenType] = useState<'curl' | 'fetch' | 'axios' | 'httpie'>('curl');
 
   // Load history on mount
   useEffect(() => {
@@ -58,6 +112,11 @@ function App() {
     }
   };
 const handleRequestSelect = (request: ApiRequest) => {
+    // Cancel any in-flight request when switching
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     // Clear previous response when switching requests
     setResponseText('');
     setResponseMeta({ status: null, durationMs: 0, headers: {}, size: 0 });
@@ -65,8 +124,15 @@ const handleRequestSelect = (request: ApiRequest) => {
     setMethod(request.method);
     setUrl(request.url);
     setParamsJson(JSON.stringify(request.params || {}, null, 2));
-    setHeadersJson(JSON.stringify(request.headers || {}, null, 2));
-    setBody(request.body || '');
+    // Convert old headers format to new format
+    const oldHeaders = request.headers || {};
+    setHeaders(Object.entries(oldHeaders).map(([key, value]) => ({
+      key,
+      value: String(value),
+      enabled: true
+    })));
+    // Set body based on old format
+    setRawBody(request.body || '');
   };
 
   // Persist changes of the current request fields to collections
@@ -81,24 +147,45 @@ const handleRequestSelect = (request: ApiRequest) => {
     try {
       parsedParams = JSON.parse(paramsJson || '{}') || {};
     } catch {}
-    try {
-      parsedHeaders = JSON.parse(headersJson || '{}') || {};
-    } catch {}
+    // Headers are now handled by the new modular system
+    parsedHeaders = headers.reduce((acc, header) => {
+      if (header.enabled && header.key && header.value) {
+        acc[header.key] = header.value;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+    // Convert new headers format to old format for persistence
+    const oldHeaders = headers.reduce((acc, header) => {
+      if (header.enabled && header.key && header.value) {
+        acc[header.key] = header.value;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+    
     updateRequest(collectionKey, requestKey, {
       method,
       url,
       params: parsedParams,
-      headers: parsedHeaders,
-      body,
+      headers: oldHeaders,
+      body: rawBody,
     });
-  }, [method, url, paramsJson, headersJson, body, selectedRequest]);
+  }, [method, url, paramsJson, headers, rawBody, selectedRequest]);
+
+  // Get active environment variables for substitution
+  const activeEnvVars = useMemo(() => {
+    const activeEnv = envState.items.find(env => env.key === envState.activeKey);
+    return activeEnv?.variables || {};
+  }, [envState]);
 
   const constructedUrl = useMemo(() => {
     try {
-      const base = url || '';
+      const base = substituteTemplate(url || '', activeEnvVars);
       const parsedParams = JSON.parse(paramsJson || '{}');
+      const substitutedParams = Object.fromEntries(
+        Object.entries(parsedParams || {}).map(([k, v]) => [k, substituteTemplate(String(v), activeEnvVars)])
+      );
       const u = new URL(base, base.startsWith('http') ? undefined : 'http://placeholder');
-      Object.entries(parsedParams || {}).forEach(([k, v]) => {
+      Object.entries(substitutedParams).forEach(([k, v]) => {
         if (v !== undefined && v !== null) u.searchParams.set(String(k), String(v));
       });
       const result = u.toString();
@@ -106,32 +193,91 @@ const handleRequestSelect = (request: ApiRequest) => {
     } catch {
       return url;
     }
-  }, [url, paramsJson]);
+  }, [url, paramsJson, activeEnvVars]);
 
   const sendRequest = async () => {
     if (!constructedUrl) {
       message.error('Please enter a URL');
       return;
     }
-    let parsedHeaders: Record<string, string> = {};
-    try {
-      parsedHeaders = JSON.parse(headersJson || '{}') || {};
-    } catch {
-      message.error('Headers must be valid JSON');
+    if (hasValidationError) {
+      message.error('Fix validation errors before sending');
       return;
     }
+    // If a request is already in progress, cancel it first
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    // Build headers from the new modular system
+    let parsedHeaders: Record<string, string> = {};
+    
+    // Add headers from HeadersTab
+    headers.forEach(header => {
+      if (header.enabled && header.key && header.value) {
+        parsedHeaders[header.key] = substituteTemplate(header.value, activeEnvVars);
+      }
+    });
+    
+    // Add authorization headers
+    if (auth.type === 'apiKey' && auth.apiKey.key && auth.apiKey.value) {
+      if (auth.apiKey.addTo === 'header') {
+        parsedHeaders[auth.apiKey.key] = substituteTemplate(auth.apiKey.value, activeEnvVars);
+      }
+    } else if (auth.type === 'bearer' && auth.bearer.token) {
+      parsedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.bearer.token, activeEnvVars)}`;
+    } else if (auth.type === 'basic' && auth.basic.username && auth.basic.password) {
+      const credentials = btoa(`${auth.basic.username}:${auth.basic.password}`);
+      parsedHeaders['Authorization'] = `Basic ${credentials}`;
+    } else if (auth.type === 'jwt' && auth.jwt.token) {
+      parsedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.jwt.token, activeEnvVars)}`;
+    }
+    
+    // Build body based on body type
     let bodyToSend: BodyInit | undefined = undefined;
-    if (method !== 'GET' && method !== 'DELETE' && body) {
-      bodyToSend = body;
-      if (!parsedHeaders['Content-Type']) parsedHeaders['Content-Type'] = 'application/json';
+    if (method !== 'GET' && method !== 'DELETE') {
+      if (bodyType === 'raw' && rawBody) {
+        bodyToSend = substituteTemplate(rawBody, activeEnvVars);
+        if (rawBodyType === 'json' && !parsedHeaders['Content-Type']) {
+          parsedHeaders['Content-Type'] = 'application/json';
+        } else if (rawBodyType === 'xml' && !parsedHeaders['Content-Type']) {
+          parsedHeaders['Content-Type'] = 'application/xml';
+        } else if (rawBodyType === 'html' && !parsedHeaders['Content-Type']) {
+          parsedHeaders['Content-Type'] = 'text/html';
+        }
+      } else if (bodyType === 'form-data' && formData.length > 0) {
+        const formDataObj = new FormData();
+        formData.forEach(item => {
+          if (item.enabled && item.key && item.value) {
+            formDataObj.append(item.key, item.value);
+          }
+        });
+        bodyToSend = formDataObj;
+        // Don't set Content-Type for FormData, let browser set it with boundary
+        delete parsedHeaders['Content-Type'];
+      } else if (bodyType === 'x-www-form-urlencoded' && urlEncoded.length > 0) {
+        const params = new URLSearchParams();
+        urlEncoded.forEach(item => {
+          if (item.enabled && item.key && item.value) {
+            params.append(item.key, item.value);
+          }
+        });
+        bodyToSend = params.toString();
+        if (!parsedHeaders['Content-Type']) {
+          parsedHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+      }
     }
     const started = performance.now();
     setIsSending(true);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     try {
       const res = await fetch(constructedUrl, {
         method,
         headers: parsedHeaders,
         body: bodyToSend,
+        signal: controller.signal,
       });
       const durationMs = Math.round(performance.now() - started);
       const resText = await res.text();
@@ -150,15 +296,20 @@ const handleRequestSelect = (request: ApiRequest) => {
         request: {
           params: JSON.parse(paramsJson || '{}') || {},
           headers: parsedHeaders,
-          body,
+          body: rawBody,
         },
         response: { headers: resHeaders, body: resText },
       };
       setHistory((h) => [historyItem, ...h].slice(0, 200));
     } catch (err: any) {
       const durationMs = Math.round(performance.now() - started);
-      setResponseText(String(err?.message || err));
-      setResponseMeta({ status: null, durationMs, headers: {}, size: 0 });
+      if (err?.name === 'AbortError') {
+        setResponseText('Request cancelled');
+        setResponseMeta({ status: null, durationMs, headers: {}, size: 0 });
+      } else {
+        setResponseText(String(err?.message || err));
+        setResponseMeta({ status: null, durationMs, headers: {}, size: 0 });
+      }
       const historyItem: HistoryItem = {
         id: `hist-${Date.now()}`,
         method,
@@ -169,13 +320,128 @@ const handleRequestSelect = (request: ApiRequest) => {
         request: {
           params: JSON.parse(paramsJson || '{}') || {},
           headers: parsedHeaders,
-          body,
+          body: rawBody,
         },
         response: null,
       };
       setHistory((h) => [historyItem, ...h].slice(0, 200));
     }
     setIsSending(false);
+    abortControllerRef.current = null;
+  };
+
+  const cancelRequest = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+
+  // Environment handlers
+  const handleAddEnvironment = () => {
+    setEditingEnv(null);
+    setEnvName('');
+    setEnvVars({});
+    setIsEnvModalVisible(true);
+  };
+
+  const handleEditEnvironment = (envKey: string) => {
+    const env = envState.items.find(e => e.key === envKey);
+    if (env) {
+      setEditingEnv(envKey);
+      setEnvName(env.name);
+      setEnvVars(env.variables);
+      setIsEnvModalVisible(true);
+    }
+  };
+
+  const handleSaveEnvironment = () => {
+    if (!envName.trim()) return;
+    
+    if (editingEnv) {
+      updateVariables(editingEnv, envVars);
+    } else {
+      addEnvironment(envName);
+    }
+    setIsEnvModalVisible(false);
+  };
+
+  // Code generation
+  const generateCode = () => {
+    // Build headers from the new modular system
+    let substitutedHeaders: Record<string, string> = {};
+    
+    // Add headers from HeadersTab
+    headers.forEach(header => {
+      if (header.enabled && header.key && header.value) {
+        substitutedHeaders[header.key] = substituteTemplate(header.value, activeEnvVars);
+      }
+    });
+    
+    // Add authorization headers
+    if (auth.type === 'apiKey' && auth.apiKey.key && auth.apiKey.value) {
+      if (auth.apiKey.addTo === 'header') {
+        substitutedHeaders[auth.apiKey.key] = substituteTemplate(auth.apiKey.value, activeEnvVars);
+      }
+    } else if (auth.type === 'bearer' && auth.bearer.token) {
+      substitutedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.bearer.token, activeEnvVars)}`;
+    } else if (auth.type === 'basic' && auth.basic.username && auth.basic.password) {
+      const credentials = btoa(`${auth.basic.username}:${auth.basic.password}`);
+      substitutedHeaders['Authorization'] = `Basic ${credentials}`;
+    } else if (auth.type === 'jwt' && auth.jwt.token) {
+      substitutedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.jwt.token, activeEnvVars)}`;
+    }
+    
+    // Build body
+    let substitutedBody = '';
+    if (bodyType === 'raw' && rawBody) {
+      substitutedBody = substituteTemplate(rawBody, activeEnvVars);
+    } else if (bodyType === 'x-www-form-urlencoded' && urlEncoded.length > 0) {
+      const params = new URLSearchParams();
+      urlEncoded.forEach(item => {
+        if (item.enabled && item.key && item.value) {
+          params.append(item.key, item.value);
+        }
+      });
+      substitutedBody = params.toString();
+    }
+
+    switch (codeGenType) {
+      case 'curl':
+        let curlCmd = `curl -X ${method} "${constructedUrl}"`;
+        Object.entries(substitutedHeaders).forEach(([k, v]) => {
+          curlCmd += ` \\\n  -H "${k}: ${v}"`;
+        });
+        if (substitutedBody && method !== 'GET' && method !== 'DELETE') {
+          curlCmd += ` \\\n  -d '${substitutedBody}'`;
+        }
+        return curlCmd;
+      
+      case 'fetch':
+        return `fetch("${constructedUrl}", {
+  method: "${method}",
+  headers: ${JSON.stringify(substitutedHeaders, null, 2)},
+  ${substitutedBody && method !== 'GET' && method !== 'DELETE' ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(substitutedBody), null, 2) : `'${substitutedBody}'`},` : ''}
+});`;
+      
+      case 'axios':
+        return `axios.${method.toLowerCase()}("${constructedUrl}", {
+  headers: ${JSON.stringify(substitutedHeaders, null, 2)},
+  ${substitutedBody && method !== 'GET' && method !== 'DELETE' ? `data: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(substitutedBody), null, 2) : `'${substitutedBody}'`},` : ''}
+});`;
+      
+      case 'httpie':
+        let httpieCmd = `http ${method} "${constructedUrl}"`;
+        Object.entries(substitutedHeaders).forEach(([k, v]) => {
+          httpieCmd += ` "${k}:${v}"`;
+        });
+        if (substitutedBody && method !== 'GET' && method !== 'DELETE') {
+          httpieCmd += ` <<< '${substitutedBody}'`;
+        }
+        return httpieCmd;
+      
+      default:
+        return '';
+    }
   };
   const sidebarTabItems = [
     {
@@ -206,7 +472,54 @@ const handleRequestSelect = (request: ApiRequest) => {
           Environments
         </span>
       ),
-      children: <div style={{ padding: '16px', color: 'white' }}>Environments UI here.</div>,
+      children: (
+        <div style={{ padding: '8px' }}>
+          <div style={{ marginBottom: 12 }}>
+            <Button 
+              type="primary" 
+              size="small" 
+              onClick={handleAddEnvironment}
+              style={{ width: '100%' }}
+            >
+              Add Environment
+            </Button>
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <Text style={{ color: 'white', fontSize: 12 }}>Active Environment:</Text>
+            <Select
+              value={envState.activeKey}
+              onChange={setActiveEnvironment}
+              placeholder="No environment"
+              size="small"
+              style={{ width: '100%', marginTop: 4 }}
+            >
+              <Option value={undefined}>No Environment</Option>
+              {envState.items.map(env => (
+                <Option key={env.key} value={env.key}>{env.name}</Option>
+              ))}
+            </Select>
+          </div>
+          <List
+            size="small"
+            dataSource={envState.items}
+            renderItem={(env) => (
+              <List.Item
+                actions={[
+                  <Button size="small" onClick={() => handleEditEnvironment(env.key)}>Edit</Button>,
+                  <Button size="small" danger onClick={() => removeEnvironment(env.key)}>Delete</Button>
+                ]}
+              >
+                <div style={{ color: 'white' }}>
+                  <div style={{ fontWeight: 'bold' }}>{env.name}</div>
+                  <div style={{ fontSize: 11, color: '#ccc' }}>
+                    {Object.keys(env.variables).length} variables
+                  </div>
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+      ),
     },
     {
       key: 'history',
@@ -217,30 +530,50 @@ const handleRequestSelect = (request: ApiRequest) => {
         </span>
       ),
       children: (
-        <div style={{ padding: '8px' }}>
-          <List
-            size="small"
-            dataSource={history}
-            renderItem={(item) => (
-              <List.Item
-                onClick={() => {
-                  setMethod(item.method);
-                  setUrl(item.url);
-                  setParamsJson(JSON.stringify(item.request.params || {}, null, 2));
-                  setHeadersJson(JSON.stringify(item.request.headers || {}, null, 2));
-                  setBody(item.request.body || '');
-                }}
-                style={{ cursor: 'pointer' }}
+        <div style={{ padding: '8px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ color: 'white', fontSize: 12 }}>Request History</Text>
+             {history.length > 0 && (
+              <Button 
+                size="small" 
+                danger 
+                onClick={() => setHistory([])}
               >
-                <Flex align="center" gap={8} style={{ width: '100%' }}>
-                  <Tag color={item.method === 'GET' ? 'blue' : item.method === 'POST' ? 'orange' : item.method === 'PUT' ? 'gold' : 'red'}>{item.method}</Tag>
-                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
-                  <span style={{ color: '#888' }}>{item.status ?? 'ERR'}</span>
-                  <span style={{ color: '#888' }}>{item.durationMs} ms</span>
-                </Flex>
-              </List.Item>
-            )}
-          />
+                Clear All
+              </Button>
+             )}
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+            <List
+              size="small"
+              dataSource={history}
+              renderItem={(item) => (
+                <List.Item
+                  onClick={() => {
+                    setMethod(item.method);
+                    setUrl(item.url);
+                  setParamsJson(JSON.stringify(item.request.params || {}, null, 2));
+                  // Convert old headers format to new format
+                  const oldHeaders = item.request.headers || {};
+                  setHeaders(Object.entries(oldHeaders).map(([key, value]) => ({
+                    key,
+                    value: String(value),
+                    enabled: true
+                  })));
+                  setRawBody(item.request.body || '');
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Flex align="center" gap={8} style={{ width: '100%' }}>
+                    <Tag color={item.method === 'GET' ? 'blue' : item.method === 'POST' ? 'orange' : item.method === 'PUT' ? 'gold' : 'red'}>{item.method}</Tag>
+                    <span style={{ color : "white", flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
+                    <span style={{ color: '#888' }}>{item.status ?? 'ERR'}</span>
+                    <span style={{ color: '#888' }}>{item.durationMs} ms</span>
+                  </Flex>
+                </List.Item>
+              )}
+            />
+          </div>
         </div>
       ),
     },
@@ -280,7 +613,8 @@ const handleRequestSelect = (request: ApiRequest) => {
               <Option value="DELETE">DELETE</Option>
             </Select>
             <Input placeholder= "https://api.example.com/resource" value={url} onChange={(e) => setUrl(e.target.value)} />
-            <Button type="primary" onClick={sendRequest} loading={isSending} disabled={isSending}>Send</Button>
+            <Button type="primary" onClick={sendRequest} loading={isSending} disabled={isSending || hasValidationError}>Send</Button>
+            <Button onClick={() => setIsCodeGenModalVisible(true)}>Code</Button>
           </Flex>
           <Tabs
             defaultActiveKey="params"
@@ -290,21 +624,44 @@ const handleRequestSelect = (request: ApiRequest) => {
                 key: 'params',
                 label: 'Query Params',
                 children: (
-                  <Input.TextArea rows={8} value={paramsJson} onChange={(e) => setParamsJson(e.target.value)} placeholder={`{\n  "page": "1"\n}`} />
+                  <>
+                    <Input.TextArea rows={8} value={paramsJson} onChange={(e) => setParamsJson(e.target.value)} placeholder={`{\n  "page": "1"\n}`} status={paramsError ? 'error' as any : ''} />
+                    {paramsError && <div style={{ color: '#ff4d4f', marginTop: 6, fontSize: 12 }}>{paramsError}</div>}
+                  </>
                 ),
               },
               {
                 key: 'headers',
                 label: 'Headers',
                 children: (
-                  <Input.TextArea rows={8} value={headersJson} onChange={(e) => setHeadersJson(e.target.value)} placeholder={`{\n  "Authorization": "Bearer ..."\n}`} />
+                  <HeadersTab headers={headers} onChange={setHeaders} />
+                ),
+              },
+              {
+                key: 'auth',
+                label: 'Authorization',
+                children: (
+                  <AuthorizationTab auth={auth} onChange={setAuth} />
                 ),
               },
               {
                 key: 'body',
                 label: 'Body',
                 children: (
-                  <Input.TextArea rows={12} value={body} onChange={(e) => setBody(e.target.value)} placeholder={`{\n  "name": "John"\n}`} />
+                  <BodyTab 
+                    bodyType={bodyType}
+                    rawBodyType={rawBodyType}
+                    rawBody={rawBody}
+                    formData={formData}
+                    urlEncoded={urlEncoded}
+                    onChange={(config) => {
+                      setBodyType(config.bodyType);
+                      setRawBodyType(config.rawBodyType);
+                      setRawBody(config.rawBody);
+                      setFormData(config.formData);
+                      setUrlEncoded(config.urlEncoded);
+                    }}
+                  />
                 ),
               },
             ]}
@@ -315,7 +672,12 @@ const handleRequestSelect = (request: ApiRequest) => {
             bodyStyle={{ padding: 0 }}
           >
             {isSending ? (
-              <div style={{ padding: 24, textAlign: 'center', color: '#888' }}>Loading...</div>
+              <div style={{ padding: 24, textAlign: 'center', color: '#888' }}>
+                <Space>
+                  <span>Loading...</span>
+                  <Button danger size="small" onClick={cancelRequest}>Cancel</Button>
+                </Space>
+              </div>
             ) : responseMeta.status ? (
               <div style={{ padding: 16 }}>
                 {/* Status and Meta Info */}
@@ -417,6 +779,102 @@ const handleRequestSelect = (request: ApiRequest) => {
 
       <Modal title="Create New Collection" open={isAddCollectionModalVisible} onOk={handleAddCollectionOk} onCancel={() => setIsAddCollectionModalVisible(false)} okText="Create">
         <Input placeholder="Enter collection name" value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} onPressEnter={handleAddCollectionOk} />
+      </Modal>
+
+      {/* Environment Modal */}
+      <Modal 
+        title={editingEnv ? "Edit Environment" : "Add Environment"} 
+        open={isEnvModalVisible} 
+        onOk={handleSaveEnvironment} 
+        onCancel={() => setIsEnvModalVisible(false)} 
+        okText="Save"
+        width={600}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>Environment Name:</Text>
+          <Input 
+            value={envName} 
+            onChange={(e) => setEnvName(e.target.value)} 
+            placeholder="e.g., Development, Staging, Production"
+            style={{ marginTop: 8 }}
+          />
+        </div>
+        <div>
+          <Text strong>Variables:</Text>
+          <div style={{ marginTop: 8, maxHeight: 300, overflowY: 'auto' }}>
+            {Object.entries(envVars).map(([key, value], index) => (
+              <div key={index} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <Input 
+                  placeholder="Variable name" 
+                  value={key} 
+                  onChange={(e) => {
+                    const newVars = { ...envVars };
+                    delete newVars[key];
+                    newVars[e.target.value] = value;
+                    setEnvVars(newVars);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <Input 
+                  placeholder="Value" 
+                  value={value} 
+                  onChange={(e) => setEnvVars({ ...envVars, [key]: e.target.value })}
+                  style={{ flex: 1 }}
+                />
+                <Button 
+                  danger 
+                  onClick={() => {
+                    const newVars = { ...envVars };
+                    delete newVars[key];
+                    setEnvVars(newVars);
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+            <Button 
+              onClick={() => setEnvVars({ ...envVars, [`var_${Date.now()}`]: '' })} 
+              style={{ width: '100%' }}
+            >
+              Add Variable
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Code Generation Modal */}
+      <Modal 
+        title="Generate Code" 
+        open={isCodeGenModalVisible} 
+        onCancel={() => setIsCodeGenModalVisible(false)} 
+        footer={null}
+        width={800}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>Select format:</Text>
+          <Select 
+            value={codeGenType} 
+            onChange={setCodeGenType} 
+            style={{ width: 200, marginLeft: 8 }}
+          >
+            <Option value="curl">cURL</Option>
+            <Option value="fetch">JavaScript fetch</Option>
+            <Option value="axios">Axios</Option>
+            <Option value="httpie">HTTPie</Option>
+          </Select>
+        </div>
+        <Input.TextArea 
+          value={generateCode()} 
+          rows={12} 
+          readOnly 
+          style={{ fontFamily: 'monospace', fontSize: 12 }}
+        />
+        <div style={{ marginTop: 16, textAlign: 'right' }}>
+          <Button onClick={() => navigator.clipboard.writeText(generateCode())}>
+            Copy to Clipboard
+          </Button>
+        </div>
       </Modal>
     </Layout>
   );

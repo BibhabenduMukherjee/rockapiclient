@@ -6,6 +6,7 @@ const fs = require('fs');
 const userDataPath = app.getPath('userData');
 const collectionsFilePath = path.join(userDataPath, 'collections.json');
 const historyFilePath = path.join(userDataPath, 'history.json');
+const envsFilePath = path.join(userDataPath, 'environments.json');
 
 if (process.env.NODE_ENV === 'development') {
   try {   
@@ -92,5 +93,28 @@ ipcMain.handle('load-history', () => {
   } catch (error) {
     console.error('Failed to load history:', error);
     return [];
+  }
+});
+
+// Environments persistence handlers
+ipcMain.handle('save-environments', (event, envState) => {
+  try {
+    const data = JSON.stringify(envState, null, 2);
+    fs.writeFileSync(envsFilePath, data);
+  } catch (error) {
+    console.error('Failed to save environments:', error);
+  }
+});
+
+ipcMain.handle('load-environments', () => {
+  try {
+    if (fs.existsSync(envsFilePath)) {
+      const data = fs.readFileSync(envsFilePath, 'utf-8');
+      return JSON.parse(data);
+    }
+    return { activeKey: undefined, items: [] };
+  } catch (error) {
+    console.error('Failed to load environments:', error);
+    return { activeKey: undefined, items: [] };
   }
 });

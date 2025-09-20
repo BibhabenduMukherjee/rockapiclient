@@ -96,6 +96,8 @@ color: rgba(241, 122, 247, 0.907) !important;
   margin-bottom: 0 !important; /* Remove space below the nav bar */
   padding: 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .sidebar-tabs .ant-tabs-tab {
@@ -110,4 +112,5 @@ color: rgba(241, 122, 247, 0.907) !important;
 .sidebar-tabs .ant-tabs-content-holder {
   flex-grow: 1;
   overflow-y: auto; /* Allow scrolling for long lists */
+  overflow-x: hidden;
 }

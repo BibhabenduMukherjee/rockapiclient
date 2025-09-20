@@ -24,4 +24,8 @@ contextBridge.exposeInMainWorld('electron', {
    * Loads saved request history items array.
    */
   loadHistory: () => ipcRenderer.invoke('load-history'),
+
+  // Environments
+  saveEnvironments: (envState) => ipcRenderer.invoke('save-environments', envState),
+  loadEnvironments: () => ipcRenderer.invoke('load-environments'),
 });

@@ -37,3 +37,14 @@ export interface HistoryItem {
     body: string;
   } | null;
 }
+
+export interface EnvironmentItem {
+  key: string;
+  name: string;
+  variables: Record<string, string>;
+}
+
+export interface EnvironmentsState {
+  activeKey?: string;
+  items: EnvironmentItem[];
+}
