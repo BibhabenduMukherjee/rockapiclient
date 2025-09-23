@@ -5,6 +5,7 @@
   "scripts": {
     "start": "electron .",
     "build": "webpack --mode production",
+    "dist": "electron-builder",
     "dev": "webpack --mode development --watch & electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "electron-rebuild",
@@ -28,7 +29,8 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "nsis", 
+        "zip"
       ]
     },
     "linux": {
@@ -64,16 +66,16 @@
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2",
     "webpack": "^5.101.0",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.0",
+    "electron-reloader": "^1.2.3"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
     "@babel/preset-typescript": "^7.27.1",
     "antd": "^5.26.7",
     "dotenv": "^17.2.1",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.0",
-    "electron-reloader": "^1.2.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   }
