@@ -19,12 +19,10 @@ import { showRequestSuccess, showRequestError, showCollectionSaved } from './com
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
 import { ApiRequest, HistoryItem } from './types'
-
 const { Content, Sider, Header } = Layout;
 const { Option } = Select;
 const { Text, Title } = Typography;
 const { Panel } = Collapse;
-
 function App() {
   // State for the currently active request in the main panel
   const [method, setMethod] = useState<ApiRequest['method']>('GET');
@@ -57,7 +55,6 @@ function App() {
   const [filteredHistory, setFilteredHistory] = useState<HistoryItem[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
-
   // Validation helpers
   const paramsError = useMemo(() => {
     try { JSON.parse(paramsJson || '{}'); return null; } catch (e:any) { return 'Invalid JSON'; }
@@ -76,14 +73,11 @@ function App() {
   }, [bodyType, rawBodyType, rawBody]);
   
   const hasValidationError = !!paramsError || !!bodyError || !url;
-
-
   // The custom hook provides all data and functions for managing collections
   const { collections, loading, addCollection, addRequest, renameNode, deleteNode, updateRequest } = useCollections();
   
   // Environment management
   const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
-
   // State for the "Add Collection" modal, which is simple enough to keep in App.tsx
   const [isAddCollectionModalVisible, setIsAddCollectionModalVisible] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
@@ -142,7 +136,6 @@ function App() {
   }, []);
   
   // Keyboard shortcuts will be initialized after handleSendRequest is defined
-
   // Load history on mount
   useEffect(() => {
     // @ts-ignore
@@ -154,12 +147,10 @@ function App() {
       }).catch(() => {});
     }
   }, []);
-
   // Handle history search
   const handleHistorySearch = (filtered: HistoryItem[]) => {
     setFilteredHistory(filtered);
   };
-
   // Handle request duplication
   const handleRequestDuplicate = (duplicatedRequest: ApiRequest) => {
     if (selectedRequest?.collectionKey) {
@@ -178,7 +169,6 @@ function App() {
       message.success(`Request "${newName}" created successfully`);
     }
   };
-
   // Handle template application
   const handleApplyTemplate = (template: any) => {
     setMethod(template.request.method);
@@ -196,7 +186,6 @@ function App() {
     setRawBody(template.request.body || '');
     message.success(`Applied template: ${template.name}`);
   };
-
   // Persist history on change
   useEffect(() => {
     // @ts-ignore
@@ -205,7 +194,6 @@ function App() {
       window.electron.saveHistory(history);
     }
   }, [history]);
-
   const handleAddCollectionOk = () => {
     if (newCollectionName) {
       addCollection(newCollectionName);
@@ -236,7 +224,6 @@ const handleRequestSelect = (request: ApiRequest) => {
     // Set body based on old format
     setRawBody(request.body || '');
   };
-
   // Persist changes of the current request fields to collections
   useEffect(() => {
     // @ts-ignore - selectedRequest from sidebar includes collectionKey
@@ -272,13 +259,11 @@ const handleRequestSelect = (request: ApiRequest) => {
       body: rawBody,
     });
   }, [method, url, paramsJson, headers, rawBody, selectedRequest]);
-
   // Get active environment variables for substitution
   const activeEnvVars = useMemo(() => {
     const activeEnv = envState.items.find(env => env.key === envState.activeKey);
     return activeEnv?.variables || {};
   }, [envState]);
-
   const constructedUrl = useMemo(() => {
     try {
       const base = substituteTemplate(url || '', activeEnvVars);
@@ -296,7 +281,6 @@ const handleRequestSelect = (request: ApiRequest) => {
       return url;
     }
   }, [url, paramsJson, activeEnvVars]);
-
   const handleSendRequest = async () => {
     if (!url) {
       message.error('Please enter a URL');
@@ -353,7 +337,6 @@ const handleRequestSelect = (request: ApiRequest) => {
       abortControllerRef.current = null;
     }
   };
-
   // Initialize keyboard shortcuts after handleSendRequest is defined
   useKeyboardShortcuts({
     onSendRequest: handleSendRequest,
@@ -365,7 +348,6 @@ const handleRequestSelect = (request: ApiRequest) => {
     onFocusBody: handleFocusBody,
     disabled: isSending
   });
-
   const handleGenerateCode = (): string => {
     const codeGenConfig: CodeGenConfig = {
       method,
@@ -381,13 +363,11 @@ const handleRequestSelect = (request: ApiRequest) => {
     
     return generateCode(codeGenConfig, codeGenType);
   };
-
   const cancelRequest = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
   };
-
   // Environment handlers
   const handleAddEnvironment = () => {
     setEditingEnv(null);
@@ -395,7 +375,6 @@ const handleRequestSelect = (request: ApiRequest) => {
     setEnvVars({});
     setIsEnvModalVisible(true);
   };
-
   const handleEditEnvironment = (envKey: string) => {
     const env = envState.items.find(e => e.key === envKey);
     if (env) {
@@ -405,7 +384,6 @@ const handleRequestSelect = (request: ApiRequest) => {
       setIsEnvModalVisible(true);
     }
   };
-
   const handleSaveEnvironment = () => {
     if (!envName.trim()) return;
     
@@ -416,7 +394,6 @@ const handleRequestSelect = (request: ApiRequest) => {
     }
     setIsEnvModalVisible(false);
   };
-
   // Code generation
  
   const sidebarTabItems = [
@@ -461,7 +438,7 @@ const handleRequestSelect = (request: ApiRequest) => {
             </Button>
           </div>
           <div style={{ marginBottom: 8 }}>
-            <Text style={{ color: 'white', fontSize: 12 }}>Active Environment:</Text>
+            <Text style={{ color: 'var(--theme-text)', fontSize: 12 }}>Active Environment:</Text>
             <Select
               value={envState.activeKey}
               onChange={setActiveEnvironment}
@@ -485,9 +462,9 @@ const handleRequestSelect = (request: ApiRequest) => {
                   <Button size="small" danger onClick={() => removeEnvironment(env.key)}>Delete</Button>
                 ]}
               >
-                <div style={{ color: 'white' }}>
+                <div style={{ color: 'var(--theme-text)' }}>
                   <div style={{ fontWeight: 'bold' }}>{env.name}</div>
-                  <div style={{ fontSize: 11, color: '#ccc' }}>
+                  <div style={{ fontSize: 11, color: 'var(--theme-text-secondary)' }}>
                     {Object.keys(env.variables).length} variables
                   </div>
                 </div>
@@ -508,7 +485,7 @@ const handleRequestSelect = (request: ApiRequest) => {
       children: (
         <div style={{ padding: '8px', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontSize: 12 }}>Request History</Text>
+            <Text style={{ color: 'var(--theme-text)', fontSize: 12 }}>Request History</Text>
              {history.length > 0 && (
               <Button 
                 size="small" 
@@ -548,9 +525,9 @@ const handleRequestSelect = (request: ApiRequest) => {
                 >
                   <Flex align="center" gap={8} style={{ width: '100%' }}>
                     <Tag color={item.method === 'GET' ? 'blue' : item.method === 'POST' ? 'orange' : item.method === 'PUT' ? 'gold' : 'red'}>{item.method}</Tag>
-                    <span style={{ color : "white", flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
-                    <span style={{ color: '#888' }}>{item.status ?? 'ERR'}</span>
-                    <span style={{ color: '#888' }}>{item.durationMs} ms</span>
+                    <span style={{ color: 'var(--theme-text)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.url}</span>
+                    <span style={{ color: 'var(--theme-text-secondary)' }}>{item.status ?? 'ERR'}</span>
+                    <span style={{ color: 'var(--theme-text-secondary)' }}>{item.durationMs} ms</span>
                   </Flex>
                 </List.Item>
               )}
@@ -560,7 +537,6 @@ const handleRequestSelect = (request: ApiRequest) => {
       ),
     },
   ];
-
    const renderAddButton = () => {
     if (activeTab === 'collections') {
       return <Button icon={<PlusOutlined />} onClick={() => setIsAddCollectionModalVisible(true)} size="small" title="Add New Collection" type="primary" ghost />;
@@ -570,7 +546,6 @@ const handleRequestSelect = (request: ApiRequest) => {
   
   // This function is called when a request is clicked in the sidebar
   
-
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', background: '#252526' }}>
@@ -606,10 +581,9 @@ const handleRequestSelect = (request: ApiRequest) => {
             className="sidebar-tabs" // Ensure you have the CSS for this class
             tabBarExtraContent={renderAddButton()}
             items={sidebarTabItems}
-            moreIcon={<span style={{ fontSize: 12, color : "wheat" }}>⋯</span>}
+            moreIcon={<span style={{ fontSize: 12, color: 'var(--theme-text-secondary)' }}>⋯</span>}
           />
         </Sider>
-
         <Content style={{ padding: '24px', margin: 0, background: '#F5F5F5' }}>
           <Flex gap="small" align="center">
             <Select value={method} onChange={setMethod} style={{ width: 120 }}>
@@ -754,7 +728,6 @@ const handleRequestSelect = (request: ApiRequest) => {
                     </div>
                   </Space>
                 </div>
-
                 {/* Collapsible Sections */}
                 <Collapse
                   size="small"
@@ -813,16 +786,10 @@ const handleRequestSelect = (request: ApiRequest) => {
             )}
           </Card>
         </Content>
-
-
       </Layout>
-
-
-
       <Modal title="Create New Collection" open={isAddCollectionModalVisible} onOk={handleAddCollectionOk} onCancel={() => setIsAddCollectionModalVisible(false)} okText="Create">
         <Input placeholder="Enter collection name" value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} onPressEnter={handleAddCollectionOk} />
       </Modal>
-
       {/* Environment Modal */}
       <Modal 
         title={editingEnv ? "Edit Environment" : "Add Environment"} 
@@ -884,7 +851,6 @@ const handleRequestSelect = (request: ApiRequest) => {
           </div>
         </div>
       </Modal>
-
       {/* Code Generation Modal */}
       <Modal 
         title="Generate Code" 
@@ -918,7 +884,6 @@ const handleRequestSelect = (request: ApiRequest) => {
           </Button>
         </div>
       </Modal>
-
       {/* Command Palette */}
       <CommandPalette
         visible={isCommandPaletteVisible}
@@ -933,14 +898,12 @@ const handleRequestSelect = (request: ApiRequest) => {
         onSwitchToCollections={handleSwitchToCollections}
         onSwitchToEnvironments={handleSwitchToEnvironments}
       />
-
       {/* Request Templates */}
       <RequestTemplates
         visible={isTemplatesModalVisible}
         onClose={() => setIsTemplatesModalVisible(false)}
         onApplyTemplate={handleApplyTemplate}
       />
-
       {/* Theme Settings */}
       <ThemeSettings
         visible={isThemeSettingsVisible}
@@ -949,5 +912,5 @@ const handleRequestSelect = (request: ApiRequest) => {
     </Layout>
   );
 }
-
 export default App;
+
