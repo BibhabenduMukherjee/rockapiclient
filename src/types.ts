@@ -3,11 +3,13 @@
 export interface ApiRequest {
   key: string;
   title: string;
+  name?: string; // For duplication functionality
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
   params?: Record<string, string>;
   headers?: Record<string, string>;
   body?: string;
+  collectionKey?: string; // For tracking which collection this request belongs to
 }
 
 export interface Collection {

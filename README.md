@@ -1,6 +1,15 @@
 # Rock API Client
 
-A modern, feature-rich Electron-based REST API client with advanced testing capabilities, theming, and developer productivity tools. Built with TypeScript, React, and Ant Design.
+Uncaught ReferenceError: variable is not defined
+    at RequestTemplates (RequestTemplates.tsx:362:15)
+    at Object.react_stack_bottom_frame (react-dom-client.development.js:23862:20)
+    at renderWithHooks (react-dom-client.development.js:5528:22)
+    at updateFunctionComponent (react-dom-client.development.js:8896:19)
+    at beginWork (react-dom-client.development.js:10521:18)
+    at runWithFiberInDEV (react-dom-client.development.js:1519:30)
+    at performUnitOfWork (react-dom-client.development.js:15139:22)
+    at workLoopSync (react-dom-client.development.js:14955:41)
+    at renderRootSync (react-dom-client.development.js:14935:11)A modern, feature-rich Electron-based REST API client with advanced testing capabilities, theming, and developer productivity tools. Built with TypeScript, React, and Ant Design.
 
 ![Rock API Client](https://img.shields.io/badge/Electron-API%20Client-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue)

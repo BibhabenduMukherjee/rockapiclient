@@ -1,12 +1,23 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Layout, Input, Select, Button, Flex, Tabs, Modal, message, List, Tag, Collapse, Card, Typography, Space } from 'antd';
-import { ExperimentOutlined, FolderOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, FolderOutlined, HistoryOutlined, PlusOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useCollections } from './hooks/useCollections';
 import { useEnvironments, substituteTemplate } from './hooks/useEnvironments';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useTheme } from './hooks/useTheme';
 import SidebarCollection from './components/Sidebar';
 import HeadersTab from './components/HeadersTab';
 import AuthorizationTab, { AuthConfig } from './components/AuthorizationTab';
 import BodyTab, { BodyType, RawBodyType, FormDataItem } from './components/BodyTab';
+import HistorySearch from './components/HistorySearch';
+import RequestDuplication from './components/RequestDuplication';
+import RequestDiff from './components/RequestDiff';
+import CommandPalette from './components/CommandPalette';
+import RequestTemplates from './components/RequestTemplates';
+import ThemeSettings from './components/ThemeSettings';
+import { showRequestSuccess, showRequestError, showCollectionSaved } from './components/EnhancedNotifications';
+import { sendRequest, RequestConfig } from './utils/requestSender';
+import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
 import { ApiRequest, HistoryItem } from './types'
 
 const { Content, Sider, Header } = Layout;
@@ -19,6 +30,7 @@ function App() {
   const [method, setMethod] = useState<ApiRequest['method']>('GET');
   const [url, setUrl] = useState('');
   const [activeTab, setActiveTab] = useState('collections');
+  const [activeContentTab, setActiveContentTab] = useState('params');
   const [paramsJson, setParamsJson] = useState<string>('{}');
   
   // Headers state
@@ -42,6 +54,7 @@ function App() {
   const [responseText, setResponseText] = useState<string>('');
   const [responseMeta, setResponseMeta] = useState<{ status: number | null; durationMs: number; headers: Record<string, string>; size: number }>({ status: null, durationMs: 0, headers: {}, size: 0 });
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [filteredHistory, setFilteredHistory] = useState<HistoryItem[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -84,16 +97,105 @@ function App() {
   
   // Code generation modal
   const [isCodeGenModalVisible, setIsCodeGenModalVisible] = useState(false);
-  const [codeGenType, setCodeGenType] = useState<'curl' | 'fetch' | 'axios' | 'httpie'>('curl');
+  const [codeGenType, setCodeGenType] = useState<CodeGenType>('curl');
+  
+  // New feature modals
+  const [isCommandPaletteVisible, setIsCommandPaletteVisible] = useState(false);
+  const [isTemplatesModalVisible, setIsTemplatesModalVisible] = useState(false);
+  const [isThemeSettingsVisible, setIsThemeSettingsVisible] = useState(false);
+  
+  // Refs for focus management
+  const urlInputRef = useRef<any>(null);
+  const paramsTextAreaRef = useRef<any>(null);
+  
+  // Theme and keyboard shortcuts
+  const { settings: themeSettings } = useTheme();
+  
+  // Focus handlers
+  const handleFocusUrl = useCallback(() => {
+    urlInputRef.current?.focus();
+  }, []);
+  
+  const handleFocusParams = useCallback(() => {
+    setActiveContentTab('params');
+    setTimeout(() => paramsTextAreaRef.current?.focus(), 100);
+  }, []);
+  
+  const handleFocusHeaders = useCallback(() => {
+    setActiveContentTab('headers');
+  }, []);
+  
+  const handleFocusBody = useCallback(() => {
+    setActiveContentTab('body');
+  }, []);
+  
+  const handleSwitchToHistory = useCallback(() => {
+    setActiveTab('history');
+  }, []);
+  
+  const handleSwitchToCollections = useCallback(() => {
+    setActiveTab('collections');
+  }, []);
+  
+  const handleSwitchToEnvironments = useCallback(() => {
+    setActiveTab('environments');
+  }, []);
+  
+  // Keyboard shortcuts will be initialized after handleSendRequest is defined
 
   // Load history on mount
   useEffect(() => {
     // @ts-ignore
     if (window.electron?.loadHistory) {
       // @ts-ignore
-      window.electron.loadHistory().then((items: HistoryItem[]) => setHistory(items || [])).catch(() => {});
+      window.electron.loadHistory().then((items: HistoryItem[]) => {
+        setHistory(items || []);
+        setFilteredHistory(items || []);
+      }).catch(() => {});
     }
   }, []);
+
+  // Handle history search
+  const handleHistorySearch = (filtered: HistoryItem[]) => {
+    setFilteredHistory(filtered);
+  };
+
+  // Handle request duplication
+  const handleRequestDuplicate = (duplicatedRequest: ApiRequest) => {
+    if (selectedRequest?.collectionKey) {
+      // Generate a unique name if duplicate exists
+      let newName = duplicatedRequest.name;
+      let counter = 1;
+      while (collections.find(c => c.key === selectedRequest.collectionKey)?.requests.some(r => r.name === newName)) {
+        newName = `${duplicatedRequest.name} ${counter}`;
+        counter++;
+      }
+      
+      addRequest(selectedRequest.collectionKey, {
+        ...duplicatedRequest,
+        name: newName
+      });
+      message.success(`Request "${newName}" created successfully`);
+    }
+  };
+
+  // Handle template application
+  const handleApplyTemplate = (template: any) => {
+    setMethod(template.request.method);
+    setUrl(template.request.url);
+    setParamsJson(JSON.stringify(template.request.params || {}, null, 2));
+    
+    // Convert headers to new format
+    const templateHeaders = template.request.headers || {};
+    setHeaders(Object.entries(templateHeaders).map(([key, value]) => ({
+      key,
+      value: String(value),
+      enabled: true
+    })));
+    
+    setRawBody(template.request.body || '');
+    message.success(`Applied template: ${template.name}`);
+  };
 
   // Persist history on change
   useEffect(() => {
@@ -195,8 +297,8 @@ const handleRequestSelect = (request: ApiRequest) => {
     }
   }, [url, paramsJson, activeEnvVars]);
 
-  const sendRequest = async () => {
-    if (!constructedUrl) {
+  const handleSendRequest = async () => {
+    if (!url) {
       message.error('Please enter a URL');
       return;
     }
@@ -204,130 +306,80 @@ const handleRequestSelect = (request: ApiRequest) => {
       message.error('Fix validation errors before sending');
       return;
     }
+    
     // If a request is already in progress, cancel it first
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    // Build headers from the new modular system
-    let parsedHeaders: Record<string, string> = {};
     
-    // Add headers from HeadersTab
-    headers.forEach(header => {
-      if (header.enabled && header.key && header.value) {
-        parsedHeaders[header.key] = substituteTemplate(header.value, activeEnvVars);
-      }
-    });
-    
-    // Add authorization headers
-    if (auth.type === 'apiKey' && auth.apiKey.key && auth.apiKey.value) {
-      if (auth.apiKey.addTo === 'header') {
-        parsedHeaders[auth.apiKey.key] = substituteTemplate(auth.apiKey.value, activeEnvVars);
-      }
-    } else if (auth.type === 'bearer' && auth.bearer.token) {
-      parsedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.bearer.token, activeEnvVars)}`;
-    } else if (auth.type === 'basic' && auth.basic.username && auth.basic.password) {
-      const credentials = btoa(`${auth.basic.username}:${auth.basic.password}`);
-      parsedHeaders['Authorization'] = `Basic ${credentials}`;
-    } else if (auth.type === 'jwt' && auth.jwt.token) {
-      parsedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.jwt.token, activeEnvVars)}`;
-    }
-    
-    // Build body based on body type
-    let bodyToSend: BodyInit | undefined = undefined;
-    if (method !== 'GET' && method !== 'DELETE') {
-      if (bodyType === 'raw' && rawBody) {
-        bodyToSend = substituteTemplate(rawBody, activeEnvVars);
-        if (rawBodyType === 'json' && !parsedHeaders['Content-Type']) {
-          parsedHeaders['Content-Type'] = 'application/json';
-        } else if (rawBodyType === 'xml' && !parsedHeaders['Content-Type']) {
-          parsedHeaders['Content-Type'] = 'application/xml';
-        } else if (rawBodyType === 'html' && !parsedHeaders['Content-Type']) {
-          parsedHeaders['Content-Type'] = 'text/html';
-        }
-      } else if (bodyType === 'form-data' && formData.length > 0) {
-        const formDataObj = new FormData();
-        formData.forEach(item => {
-          if (item.enabled && item.key && item.value) {
-            formDataObj.append(item.key, item.value);
-          }
-        });
-        bodyToSend = formDataObj;
-        // Don't set Content-Type for FormData, let browser set it with boundary
-        delete parsedHeaders['Content-Type'];
-      } else if (bodyType === 'x-www-form-urlencoded' && urlEncoded.length > 0) {
-        const params = new URLSearchParams();
-        urlEncoded.forEach(item => {
-          if (item.enabled && item.key && item.value) {
-            params.append(item.key, item.value);
-          }
-        });
-        bodyToSend = params.toString();
-        if (!parsedHeaders['Content-Type']) {
-          parsedHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
-        }
-      }
-    }
-    const started = performance.now();
     setIsSending(true);
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    
     try {
-      const res = await fetch(constructedUrl, {
+      const requestConfig: RequestConfig = {
         method,
-        headers: parsedHeaders,
-        body: bodyToSend,
-        signal: controller.signal,
-      });
-      const durationMs = Math.round(performance.now() - started);
-      const resText = await res.text();
-      const resHeaders: Record<string, string> = {};
-      res.headers.forEach((v, k) => { resHeaders[k] = v; });
-      setResponseText(resText);
-      setResponseMeta({ status: res.status, durationMs, headers: resHeaders, size: new Blob([resText]).size });
-
-      const historyItem: HistoryItem = {
-        id: `hist-${Date.now()}`,
-        method,
-        url: constructedUrl,
-        status: res.status,
-        durationMs,
-        timestamp: Date.now(),
-        request: {
-          params: JSON.parse(paramsJson || '{}') || {},
-          headers: parsedHeaders,
-          body: rawBody,
-        },
-        response: { headers: resHeaders, body: resText },
+        url,
+        paramsJson,
+        headers,
+        auth,
+        bodyType,
+        rawBodyType,
+        rawBody,
+        formData,
+        urlEncoded,
+        activeEnvVars
       };
-      setHistory((h) => [historyItem, ...h].slice(0, 200));
+      
+      const result = await sendRequest(requestConfig, controller.signal);
+      
+      setResponseText(result.responseText);
+      setResponseMeta(result.responseMeta);
+      setHistory((h) => [result.historyItem, ...h].slice(0, 200));
+      
+      // Show success notification
+      showRequestSuccess(result.responseMeta.durationMs, result.responseMeta.status || 0);
     } catch (err: any) {
-      const durationMs = Math.round(performance.now() - started);
-      if (err?.name === 'AbortError') {
-        setResponseText('Request cancelled');
-        setResponseMeta({ status: null, durationMs, headers: {}, size: 0 });
-      } else {
-        setResponseText(String(err?.message || err));
-        setResponseMeta({ status: null, durationMs, headers: {}, size: 0 });
-      }
-      const historyItem: HistoryItem = {
-        id: `hist-${Date.now()}`,
-        method,
-        url: constructedUrl,
-        status: null,
-        durationMs,
-        timestamp: Date.now(),
-        request: {
-          params: JSON.parse(paramsJson || '{}') || {},
-          headers: parsedHeaders,
-          body: rawBody,
-        },
-        response: null,
-      };
-      setHistory((h) => [historyItem, ...h].slice(0, 200));
+      console.error('Request failed:', err);
+      const errorMessage = err?.message || 'Unknown error';
+      
+      // Show error notification with retry option
+      showRequestError(errorMessage, () => {
+        handleSendRequest();
+      });
+    } finally {
+      setIsSending(false);
+      abortControllerRef.current = null;
     }
-    setIsSending(false);
-    abortControllerRef.current = null;
+  };
+
+  // Initialize keyboard shortcuts after handleSendRequest is defined
+  useKeyboardShortcuts({
+    onSendRequest: handleSendRequest,
+    onSaveCollection: () => showCollectionSaved(),
+    onOpenCommandPalette: () => setIsCommandPaletteVisible(true),
+    onFocusUrl: handleFocusUrl,
+    onFocusParams: handleFocusParams,
+    onFocusHeaders: handleFocusHeaders,
+    onFocusBody: handleFocusBody,
+    disabled: isSending
+  });
+
+  const handleGenerateCode = (): string => {
+    const codeGenConfig: CodeGenConfig = {
+      method,
+      url,
+      headers,
+      auth,
+      bodyType,
+      rawBodyType,
+      rawBody,
+      urlEncoded,
+      activeEnvVars
+    };
+    
+    return generateCode(codeGenConfig, codeGenType);
   };
 
   const cancelRequest = () => {
@@ -366,83 +418,7 @@ const handleRequestSelect = (request: ApiRequest) => {
   };
 
   // Code generation
-  const generateCode = () => {
-    // Build headers from the new modular system
-    let substitutedHeaders: Record<string, string> = {};
-    
-    // Add headers from HeadersTab
-    headers.forEach(header => {
-      if (header.enabled && header.key && header.value) {
-        substitutedHeaders[header.key] = substituteTemplate(header.value, activeEnvVars);
-      }
-    });
-    
-    // Add authorization headers
-    if (auth.type === 'apiKey' && auth.apiKey.key && auth.apiKey.value) {
-      if (auth.apiKey.addTo === 'header') {
-        substitutedHeaders[auth.apiKey.key] = substituteTemplate(auth.apiKey.value, activeEnvVars);
-      }
-    } else if (auth.type === 'bearer' && auth.bearer.token) {
-      substitutedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.bearer.token, activeEnvVars)}`;
-    } else if (auth.type === 'basic' && auth.basic.username && auth.basic.password) {
-      const credentials = btoa(`${auth.basic.username}:${auth.basic.password}`);
-      substitutedHeaders['Authorization'] = `Basic ${credentials}`;
-    } else if (auth.type === 'jwt' && auth.jwt.token) {
-      substitutedHeaders['Authorization'] = `Bearer ${substituteTemplate(auth.jwt.token, activeEnvVars)}`;
-    }
-    
-    // Build body
-    let substitutedBody = '';
-    if (bodyType === 'raw' && rawBody) {
-      substitutedBody = substituteTemplate(rawBody, activeEnvVars);
-    } else if (bodyType === 'x-www-form-urlencoded' && urlEncoded.length > 0) {
-      const params = new URLSearchParams();
-      urlEncoded.forEach(item => {
-        if (item.enabled && item.key && item.value) {
-          params.append(item.key, item.value);
-        }
-      });
-      substitutedBody = params.toString();
-    }
-
-    switch (codeGenType) {
-      case 'curl':
-        let curlCmd = `curl -X ${method} "${constructedUrl}"`;
-        Object.entries(substitutedHeaders).forEach(([k, v]) => {
-          curlCmd += ` \\\n  -H "${k}: ${v}"`;
-        });
-        if (substitutedBody && method !== 'GET' && method !== 'DELETE') {
-          curlCmd += ` \\\n  -d '${substitutedBody}'`;
-        }
-        return curlCmd;
-      
-      case 'fetch':
-        return `fetch("${constructedUrl}", {
-  method: "${method}",
-  headers: ${JSON.stringify(substitutedHeaders, null, 2)},
-  ${substitutedBody && method !== 'GET' && method !== 'DELETE' ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(substitutedBody), null, 2) : `'${substitutedBody}'`},` : ''}
-});`;
-      
-      case 'axios':
-        return `axios.${method.toLowerCase()}("${constructedUrl}", {
-  headers: ${JSON.stringify(substitutedHeaders, null, 2)},
-  ${substitutedBody && method !== 'GET' && method !== 'DELETE' ? `data: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(substitutedBody), null, 2) : `'${substitutedBody}'`},` : ''}
-});`;
-      
-      case 'httpie':
-        let httpieCmd = `http ${method} "${constructedUrl}"`;
-        Object.entries(substitutedHeaders).forEach(([k, v]) => {
-          httpieCmd += ` "${k}:${v}"`;
-        });
-        if (substitutedBody && method !== 'GET' && method !== 'DELETE') {
-          httpieCmd += ` <<< '${substitutedBody}'`;
-        }
-        return httpieCmd;
-      
-      default:
-        return '';
-    }
-  };
+ 
   const sidebarTabItems = [
     {
       key: 'collections',
@@ -543,10 +519,16 @@ const handleRequestSelect = (request: ApiRequest) => {
               </Button>
              )}
           </div>
+          {/* History Search Component */}
+          <HistorySearch 
+            history={history} 
+            onSearch={handleHistorySearch} 
+          />
+          
           <div style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
             <List
               size="small"
-              dataSource={history}
+              dataSource={filteredHistory}
               renderItem={(item) => (
                 <List.Item
                   onClick={() => {
@@ -591,9 +573,33 @@ const handleRequestSelect = (request: ApiRequest) => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', background: '#252526' }}>Rock API Client</Header>
+      <Header style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', background: '#252526' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Rock API Client</span>
+          <Space>
+            <Button
+              type="text"
+              icon={<ThunderboltOutlined />}
+              onClick={() => setIsTemplatesModalVisible(true)}
+              style={{ color: '#fff' }}
+              title="Request Templates (Ctrl+T)"
+            >
+              Templates
+            </Button>
+            <Button
+              type="text"
+              icon={<SettingOutlined />}
+              onClick={() => setIsThemeSettingsVisible(true)}
+              style={{ color: '#fff' }}
+              title="Theme Settings"
+            >
+              Theme
+            </Button>
+          </Space>
+        </div>
+      </Header>
       <Layout>
-          <Sider width={300} className="cool-sidebar">
+          <Sider width={themeSettings.sidebarWidth} className="cool-sidebar">
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
@@ -612,12 +618,41 @@ const handleRequestSelect = (request: ApiRequest) => {
               <Option value="PUT">PUT</Option>
               <Option value="DELETE">DELETE</Option>
             </Select>
-            <Input placeholder= "https://api.example.com/resource" value={url} onChange={(e) => setUrl(e.target.value)} />
-            <Button type="primary" onClick={sendRequest} loading={isSending} disabled={isSending || hasValidationError}>Send</Button>
+            <Input 
+              ref={urlInputRef}
+              placeholder="https://api.example.com/resource" 
+              value={url} 
+              onChange={(e) => setUrl(e.target.value)} 
+            />
+            <Button type="primary" onClick={handleSendRequest} loading={isSending} disabled={isSending || hasValidationError}>Send</Button>
             <Button onClick={() => setIsCodeGenModalVisible(true)}>Code</Button>
+            
+            {/* Request Duplication Button */}
+            {selectedRequest && (
+              <RequestDuplication 
+                request={selectedRequest} 
+                onDuplicate={handleRequestDuplicate}
+              />
+            )}
+            
+            {/* Request Diff Button */}
+            <RequestDiff 
+              currentRequest={selectedRequest || { 
+                key: 'current',
+                title: 'Current Request',
+                name: 'Current Request', 
+                method, 
+                url, 
+                params: JSON.parse(paramsJson || '{}'), 
+                headers: headers.reduce((acc, h) => ({ ...acc, [h.key]: h.value }), {}), 
+                body: rawBody 
+              }}
+              history={history}
+            />
           </Flex>
           <Tabs
-            defaultActiveKey="params"
+            activeKey={activeContentTab}
+            onChange={setActiveContentTab}
             style={{ marginTop: 20 }}
             items={[
               {
@@ -625,7 +660,14 @@ const handleRequestSelect = (request: ApiRequest) => {
                 label: 'Query Params',
                 children: (
                   <>
-                    <Input.TextArea rows={8} value={paramsJson} onChange={(e) => setParamsJson(e.target.value)} placeholder={`{\n  "page": "1"\n}`} status={paramsError ? 'error' as any : ''} />
+                    <Input.TextArea 
+                      ref={paramsTextAreaRef}
+                      rows={8} 
+                      value={paramsJson} 
+                      onChange={(e) => setParamsJson(e.target.value)} 
+                      placeholder={`{\n  "page": "1"\n}`} 
+                      status={paramsError ? 'error' as any : ''} 
+                    />
                     {paramsError && <div style={{ color: '#ff4d4f', marginTop: 6, fontSize: 12 }}>{paramsError}</div>}
                   </>
                 ),
@@ -865,17 +907,45 @@ const handleRequestSelect = (request: ApiRequest) => {
           </Select>
         </div>
         <Input.TextArea 
-          value={generateCode()} 
+          value={handleGenerateCode()} 
           rows={12} 
           readOnly 
           style={{ fontFamily: 'monospace', fontSize: 12 }}
         />
         <div style={{ marginTop: 16, textAlign: 'right' }}>
-          <Button onClick={() => navigator.clipboard.writeText(generateCode())}>
+          <Button onClick={() => navigator.clipboard.writeText(handleGenerateCode())}>
             Copy to Clipboard
           </Button>
         </div>
       </Modal>
+
+      {/* Command Palette */}
+      <CommandPalette
+        visible={isCommandPaletteVisible}
+        onClose={() => setIsCommandPaletteVisible(false)}
+        onSendRequest={handleSendRequest}
+        onSaveCollection={() => showCollectionSaved()}
+        onFocusUrl={handleFocusUrl}
+        onFocusParams={handleFocusParams}
+        onFocusHeaders={handleFocusHeaders}
+        onFocusBody={handleFocusBody}
+        onSwitchToHistory={handleSwitchToHistory}
+        onSwitchToCollections={handleSwitchToCollections}
+        onSwitchToEnvironments={handleSwitchToEnvironments}
+      />
+
+      {/* Request Templates */}
+      <RequestTemplates
+        visible={isTemplatesModalVisible}
+        onClose={() => setIsTemplatesModalVisible(false)}
+        onApplyTemplate={handleApplyTemplate}
+      />
+
+      {/* Theme Settings */}
+      <ThemeSettings
+        visible={isThemeSettingsVisible}
+        onClose={() => setIsThemeSettingsVisible(false)}
+      />
     </Layout>
   );
 }

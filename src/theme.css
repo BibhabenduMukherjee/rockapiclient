@@ -1,0 +1,171 @@
+/* Theme CSS Variables */
+:root {
+  --theme-primary: #1890ff;
+  --theme-secondary: #722ed1;
+  --theme-background: #ffffff;
+  --theme-surface: #fafafa;
+  --theme-text: #262626;
+  --theme-text-secondary: #8c8c8c;
+  --theme-border: #d9d9d9;
+  --theme-success: #52c41a;
+  --theme-warning: #faad14;
+  --theme-error: #ff4d4f;
+  --theme-info: #1890ff;
+  --theme-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --theme-font-size: 14px;
+  --theme-sidebar-width: 300px;
+  --theme-border-radius: 6px;
+  --theme-spacing: 16px;
+}
+
+/* Apply theme variables to common elements */
+body {
+  font-family: var(--theme-font-family);
+  font-size: var(--theme-font-size);
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+}
+
+/* Sidebar theming */
+.cool-sidebar {
+  background-color: var(--theme-surface) !important;
+  border-right: 1px solid var(--theme-border) !important;
+}
+
+.cool-sidebar .ant-tabs-tab {
+  color: var(--theme-text-secondary) !important;
+}
+
+.cool-sidebar .ant-tabs-tab-active {
+  color: var(--theme-primary) !important;
+}
+
+.cool-sidebar .ant-tabs-content-holder {
+  background-color: var(--theme-surface) !important;
+}
+
+/* Custom button styles */
+.theme-button-primary {
+  background-color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+}
+
+.theme-button-primary:hover {
+  background-color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+  opacity: 0.8;
+}
+
+/* Custom card styles */
+.theme-card {
+  background-color: var(--theme-background) !important;
+  border: 1px solid var(--theme-border) !important;
+  border-radius: var(--theme-border-radius) !important;
+}
+
+/* Custom input styles */
+.theme-input {
+  background-color: var(--theme-background) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-input:focus {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Status indicators */
+.status-success {
+  color: var(--theme-success) !important;
+}
+
+.status-warning {
+  color: var(--theme-warning) !important;
+}
+
+.status-error {
+  color: var(--theme-error) !important;
+}
+
+.status-info {
+  color: var(--theme-info) !important;
+}
+
+/* Dark theme specific overrides */
+.theme-dark {
+  --theme-primary: #177ddc;
+  --theme-secondary: #642ab5;
+  --theme-background: #141414;
+  --theme-surface: #1f1f1f;
+  --theme-text: #ffffff;
+  --theme-text-secondary: #a6a6a6;
+  --theme-border: #434343;
+  --theme-success: #49aa19;
+  --theme-warning: #d89614;
+  --theme-error: #dc4446;
+  --theme-info: #177ddc;
+}
+
+/* High contrast theme specific overrides */
+.theme-high-contrast {
+  --theme-primary: #0000ff;
+  --theme-secondary: #800080;
+  --theme-background: #ffffff;
+  --theme-surface: #f0f0f0;
+  --theme-text: #000000;
+  --theme-text-secondary: #666666;
+  --theme-border: #000000;
+  --theme-success: #008000;
+  --theme-warning: #ff8c00;
+  --theme-error: #ff0000;
+  --theme-info: #0000ff;
+}
+
+/* Blue ocean theme specific overrides */
+.theme-blue {
+  --theme-primary: #0066cc;
+  --theme-secondary: #004499;
+  --theme-background: #f0f8ff;
+  --theme-surface: #e6f3ff;
+  --theme-text: #003366;
+  --theme-text-secondary: #6699cc;
+  --theme-border: #b3d9ff;
+  --theme-success: #00aa44;
+  --theme-warning: #ff8800;
+  --theme-error: #cc0000;
+  --theme-info: #0066cc;
+}
+
+/* Responsive sidebar width */
+.ant-layout-sider {
+  width: var(--theme-sidebar-width) !important;
+  min-width: var(--theme-sidebar-width) !important;
+  max-width: var(--theme-sidebar-width) !important;
+}
+
+/* Custom spacing */
+.theme-spacing-small {
+  margin: calc(var(--theme-spacing) / 2);
+}
+
+.theme-spacing-medium {
+  margin: var(--theme-spacing);
+}
+
+.theme-spacing-large {
+  margin: calc(var(--theme-spacing) * 2);
+}
+
+/* Custom border radius */
+.theme-rounded {
+  border-radius: var(--theme-border-radius) !important;
+}
+
+.theme-rounded-small {
+  border-radius: calc(var(--theme-border-radius) / 2) !important;
+}
+
+.theme-rounded-large {
+  border-radius: calc(var(--theme-border-radius) * 2) !important;
+}
