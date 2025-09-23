@@ -1,6 +1,6 @@
 const { app, BrowserWindow,ipcMain } = require('electron');
 const path = require('path');
-const { placeholder } = require('./config/placeholder');
+//const { placeholder } = require('./config/placeholder');
 const fs = require('fs');
 
 const userDataPath = app.getPath('userData');
@@ -13,6 +13,23 @@ if (process.env.NODE_ENV === 'development') {
     require('electron-reloader')(module);
   } catch {}  
 }
+
+
+
+const placeholder = {
+  window: {
+      title: 'Rock API Client',
+      width: 1400,
+      height: 1100,
+      minWidth : 1200,
+      minHeight: 900,
+      resizable: true,
+      minimizable: true,
+      maximizable: true,
+      closable: true,
+  }
+}
+
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: placeholder.window.width || 800,
