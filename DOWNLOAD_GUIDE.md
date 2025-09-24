@@ -1,109 +1,119 @@
-# 📥 How Users Download Your App
+# 📥 How to Download RockApiClient
 
-## 🚀 Current Setup
+## 🚀 Download Your App
 
-Your app now has **automatic releases** set up! Here's how it works:
+RockApiClient is available for **macOS**, **Windows**, and **Linux**. Choose your platform below:
 
-### **When You Push to Main Branch:**
-```bash
-git add .
-git commit -m "feat: new features"
-git push origin main
-```
+### **📱 macOS (Apple Silicon - M1/M2/M3)**
+- **File**: `RockApiClient-1.0.0-arm64-mac.dmg` (96MB)
+- **Compatible with**: MacBook Air/Pro with M1, M2, M3 chips
 
-**What happens:**
-1. ✅ GitHub Actions automatically builds your app
-2. ✅ Creates installers for macOS, Windows, and Linux
-3. ✅ Creates a GitHub Release with download links
-4. ✅ Users can download from the Releases page
+### **💻 macOS (Intel)**
+- **File**: `RockApiClient-1.0.0-x64-mac.dmg` (100MB)
+- **Compatible with**: MacBook Air/Pro with Intel processors
 
-### **When You Create a Tag:**
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+### **🪟 Windows**
+- **File**: `RockApiClient-1.0.0-setup.exe` (100MB)
+- **Compatible with**: Windows 10 and later
 
-**What happens:**
-1. ✅ Same as above, but with a specific version tag
-2. ✅ More professional for major releases
+### **🐧 Linux**
+- **File**: `RockApiClient-1.0.0.AppImage` (100MB)
+- **Compatible with**: Ubuntu, Debian, Fedora, and other Linux distributions
 
-## 📍 Where Users Download Your App
+## 📍 Where to Download
 
-### **GitHub Releases Page:**
+### **GitHub Releases Page**
+Visit our official releases page to download the latest version:
 ```
 https://github.com/YOUR_USERNAME/YOUR_REPO/releases
 ```
 
-### **Direct Download Links:**
-- **macOS (Apple Silicon)**: `RockApiClient-1.0.0-arm64-mac.dmg` (96MB)
-- **macOS (Intel)**: `RockApiClient-1.0.0-x64-mac.dmg` (100MB)
-- **Windows**: `RockApiClient-1.0.0-setup.exe` (installer)
-- **Linux**: `RockApiClient-1.0.0.AppImage` (universal)
+### **Latest Release**
+Always download from the **latest release** to get the most recent features and bug fixes.
 
-## 🎯 For Your First Release (v1.0.0)
+## 📱 Installation Instructions
 
-### **Option 1: Quick Release**
-```bash
-# Just push to main - it will create v1.0.0 release automatically
-git add .
-git commit -m "feat: prepare v1.0.0 release"
-git push origin main
-```
+### **macOS Installation**
+1. **Download** the `.dmg` file for your Mac type (Apple Silicon or Intel)
+2. **Open** the downloaded `.dmg` file
+3. **Drag** RockApiClient to your Applications folder
+4. **Launch** from Applications or Spotlight search
 
-### **Option 2: Tagged Release**
-```bash
-# Use the release script
-./scripts/release.sh
-# Choose option 4 (Custom version)
-# Enter: 1.0.0
-```
+### **Windows Installation**
+1. **Download** the `.exe` installer file
+2. **Run** the installer as Administrator
+3. **Follow** the setup wizard instructions
+4. **Launch** from Start Menu or Desktop shortcut
 
-### **Option 3: Manual Tag**
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+### **Linux Installation**
+1. **Download** the `.AppImage` file
+2. **Make executable**: Right-click → Properties → Permissions → Allow executing
+3. **Run**: Double-click the file or run from terminal
+4. **Optional**: Move to `/opt/` for system-wide installation
 
-## 📱 How Users Install
+## 🔄 Getting Updates
 
-### **macOS:**
-1. Download the `.dmg` file
-2. Open the downloaded file
-3. Drag RockApiClient to Applications folder
+### **Automatic Notifications**
+- New releases are automatically published when updates are available
+- Check the GitHub releases page for the latest version
+- Download and install the new version to get updates
 
-### **Windows:**
-1. Download the `.exe` installer
-2. Run the installer and follow setup wizard
+### **Version Information**
+- **Current Version**: 1.0.0
+- **Release Date**: [Will be updated when released]
+- **File Sizes**: Optimized for fast downloads (96-100MB)
 
-### **Linux:**
-1. Download the `.AppImage` file
-2. Make it executable: `chmod +x RockApiClient-1.0.0.AppImage`
-3. Run: `./RockApiClient-1.0.0.AppImage`
+## 🛠️ System Requirements
 
-## 🔄 Automatic Updates
+### **macOS**
+- **OS**: macOS 10.14 (Mojave) or later
+- **Architecture**: Apple Silicon (M1/M2/M3) or Intel x64
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 200MB free space
 
-Every time you push to main, users will see a new release with:
-- ✅ Latest features
-- ✅ Bug fixes
-- ✅ Download links for all platforms
-- ✅ Release notes
+### **Windows**
+- **OS**: Windows 10 or later
+- **Architecture**: x64 (64-bit)
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 200MB free space
 
-## 📊 File Sizes (Optimized!)
+### **Linux**
+- **OS**: Ubuntu 18.04+, Debian 10+, or equivalent
+- **Architecture**: x64 (64-bit)
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 200MB free space
 
-- **macOS DMG**: ~96-100MB
-- **Windows Installer**: ~100-110MB
-- **Linux AppImage**: ~100-110MB
+## 🐛 Troubleshooting
 
-These are reasonable sizes for Electron apps!
+### **Download Issues**
+- **Slow download**: File sizes are optimized (96-100MB) for fast downloads
+- **Corrupted file**: Re-download from the releases page
+- **Browser issues**: Try a different browser or download manager
 
-## 🎉 Ready to Release?
+### **Installation Issues**
+- **macOS**: Make sure you're downloading the correct version (Apple Silicon vs Intel)
+- **Windows**: Run installer as Administrator if you get permission errors
+- **Linux**: Ensure the AppImage has execute permissions
 
-1. **Test your app**: `npm run start`
-2. **Build locally**: `npm run dist:mac` (to test)
-3. **Push to main**: `git push origin main`
-4. **Check releases**: Go to your GitHub repo → Releases tab
-5. **Share the link**: Give users the releases page URL
+### **App Won't Launch**
+- **macOS**: Check System Preferences → Security & Privacy → Allow apps from identified developers
+- **Windows**: Check Windows Defender or antivirus software
+- **Linux**: Install required dependencies if prompted
+
+## 📞 Support
+
+### **Getting Help**
+- **GitHub Issues**: Report bugs or request features
+- **Documentation**: Check our comprehensive guides
+- **Community**: Join our discussions
+
+### **Reporting Issues**
+When reporting issues, please include:
+- Your operating system and version
+- RockApiClient version
+- Steps to reproduce the problem
+- Any error messages
 
 ---
 
-**Your app will be automatically available for download every time you push to main!** 🚀
+**Ready to get started? Download RockApiClient now and experience the power of a modern API client!** 🚀
