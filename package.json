@@ -89,7 +89,8 @@
         }
       ],
       "category": "Utility",
-      "icon": "public/icon.png"
+      "icon": "public/icon.png",
+      "maintainer": "RockApiClient Team <team@rockapiclient.com>"
     },
     "nsis": {
       "oneClick": false,
@@ -99,12 +100,21 @@
     },
     "publish": null,
     "buildVersion": "1.0.0",
-    "artifactName": "${productName}-${version}-${arch}-${os}.${ext}"
+    "artifactName": "${productName}-${version}-${arch}-${os}.${ext}",
+    "copyright": "Copyright © 2024 RockApiClient Team"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["api", "client", "rest", "http", "electron"],
+  "author": {
+    "name": "RockApiClient Team",
+    "email": "team@rockapiclient.com"
+  },
+  "license": "MIT",
+  "description": "A powerful REST API client built with Electron and React",
+  "homepage": "https://github.com/YOUR_USERNAME/YOUR_REPO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+  },
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
