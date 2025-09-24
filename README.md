@@ -3,7 +3,21 @@
 ![Rock API Client](https://img.shields.io/badge/Electron-API%20Client-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue)
 ![React](https://img.shields.io/badge/React-18+-blue)
-![License](https://img.shields.io/badge/License-ISC-green)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+## 📥 Download
+
+**Latest Release:** [Download RockApiClient](https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest)
+
+### Supported Platforms:
+- 🍎 **macOS** (Intel & Apple Silicon) - `.dmg` installer
+- 🪟 **Windows** (x64) - `.exe` installer  
+- 🐧 **Linux** (x64) - `.AppImage` or `.deb` package
+
+### Quick Install:
+1. Go to [Releases](https://github.com/YOUR_USERNAME/YOUR_REPO/releases)
+2. Download the installer for your platform
+3. Run the installer and start testing APIs!
 
 ## ✨ Features
 
