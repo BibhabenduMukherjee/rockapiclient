@@ -228,7 +228,7 @@ export default function CommandPalette({
                   <Space>
                     <Text strong>{command.title}</Text>
                     {command.keywords.slice(0, 2).map(keyword => (
-                      <Tag key={keyword} size="small" color="blue">
+                      <Tag key={keyword} color="blue">
                         {keyword}
                       </Tag>
                     ))}
