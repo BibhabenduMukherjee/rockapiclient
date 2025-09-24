@@ -1,0 +1,219 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "release"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+            artifact: mac
+          - os: windows-latest
+            platform: win
+            artifact: win
+          - os: ubuntu-latest
+            platform: linux
+            artifact: linux
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Build Electron app for ${{ matrix.platform }}
+      run: npm run dist
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload ${{ matrix.platform }} artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: electron-app-${{ matrix.artifact }}
+        path: |
+          dist/
+          !dist/*/
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+    
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+        
+    - name: Get version from tag or branch
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          # For main branch pushes, use package.json version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        release_name: RockApiClient ${{ steps.get_version.outputs.version }}
+        body: |
+          ## 🚀 RockApiClient ${{ steps.get_version.outputs.version }}
+          
+          ### ✨ What's New
+          - Fixed header input focus issues
+          - Improved request management
+          - Enhanced user experience
+          - Better keyboard shortcuts
+          
+          ### 📥 Downloads
+          
+          **macOS:**
+          - Download the `.dmg` file for easy installation
+          - Or download the `.zip` file for manual installation
+          
+          **Windows:**
+          - Download the `.exe` installer for easy setup
+          - Or download the `.zip` file for portable version
+          
+          **Linux:**
+          - Download the `.AppImage` for universal compatibility
+          - Or download the `.deb` package for Debian/Ubuntu
+          
+          ### 🛠️ Installation
+          
+          **macOS:**
+          1. Download the `.dmg` file
+          2. Open the downloaded file
+          3. Drag RockApiClient to Applications folder
+          
+          **Windows:**
+          1. Download the `.exe` installer
+          2. Run the installer and follow the setup wizard
+          
+          **Linux:**
+          1. For AppImage: Make executable and run
+          2. For .deb: Install with `sudo dpkg -i rockapiclient.deb`
+          
+          ### 📋 System Requirements
+          - macOS 10.14 or later
+          - Windows 10 or later
+          - Linux (Ubuntu 18.04+, Debian 10+, or equivalent)
+          
+          ### 🐛 Bug Reports
+          If you encounter any issues, please report them on our [GitHub Issues](https://github.com/${{ github.repository }}/issues) page.
+          
+          ### 📖 Documentation
+          Check out our [documentation](https://github.com/${{ github.repository }}) for detailed usage instructions.
+        draft: false
+        prerelease: false
+        
+    - name: Upload macOS artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.dmg
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-mac-arm64.dmg
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64-mac.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-mac-arm64.zip
+        asset_content_type: application/zip
+        
+    - name: Upload Windows installer
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-win/dist/RockApiClient Setup 1.0.0.exe
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-setup.exe
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Windows zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-win/dist/RockApiClient-1.0.0-win.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-win.zip
+        asset_content_type: application/zip
+        
+    - name: Upload Linux AppImage
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-linux/dist/RockApiClient-1.0.0.AppImage
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}.AppImage
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Linux deb
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-linux/dist/rock-api-client_1.0.0_amd64.deb
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}.deb
+        asset_content_type: application/vnd.debian.binary-package

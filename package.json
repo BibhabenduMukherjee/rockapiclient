@@ -6,58 +6,136 @@
     "start": "electron .",
     "build": "webpack --mode production",
     "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
     "dev": "webpack --mode development --watch & electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "electron-rebuild",
     "lint": "eslint .",
-    "pretest": "npm run lint"
+    "pretest": "npm run lint",
+    "release": "npm run build && npm run dist",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
   },
   "build": {
     "appId": "com.codeaum.rockapiclient",
     "productName": "RockApiClient",
+    "directories": {
+      "output": "dist"
+    },
     "files": [
-      "dist/**/*",
+      "dist/bundle.js",
+      "dist/index.html",
       "main.js",
-      "package.json"
+      "package.json",
+      "preload.js"
     ],
+    "asar": true,
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ],
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "public/icon.icns"
     },
     "win": {
       "target": [
-        "nsis", 
-        "zip"
-      ]
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon.ico"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
-      ]
-    }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "icon": "public/icon.png",
+      "maintainer": "RockApiClient Team <team@rockapiclient.com>"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": null,
+    "buildVersion": "1.0.0",
+    "artifactName": "${productName}-${version}-${arch}-${os}.${ext}",
+    "copyright": "Copyright © 2024 RockApiClient Team"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["api", "client", "rest", "http", "electron"],
+  "author": {
+    "name": "RockApiClient Team",
+    "email": "team@rockapiclient.com"
+  },
+  "license": "MIT",
+  "description": "A powerful REST API client built with Electron and React",
+  "homepage": "https://github.com/YOUR_USERNAME/YOUR_REPO",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+  },
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-react": "^7.27.1",
-    "@types/react": "^19.1.9",
-    "@types/react-dom": "^19.1.7",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
     "autoprefixer": "^10.4.21",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
     "electron": "^28.0",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.0",
+    "electron-reloader": "^1.2.3",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-import": "^2.25.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "html-webpack-plugin": "^5.6.3",
     "postcss": "^8.5.6",
     "postcss-loader": "^8.1.1",
@@ -66,17 +144,16 @@
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2",
     "webpack": "^5.101.0",
-    "webpack-cli": "^6.0.1",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.0",
-    "electron-reloader": "^1.2.3"
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
     "@babel/preset-typescript": "^7.27.1",
     "antd": "^5.26.7",
     "dotenv": "^17.2.1",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "reactour": "^1.19.4",
+    "styled-components": "^5.3.11"
   }
 }

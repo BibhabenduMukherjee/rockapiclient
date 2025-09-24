@@ -1,0 +1,435 @@
+import React, { useRef, useMemo, useState, useEffect } from 'react';
+import { Layout, Input, Select, Button, Flex, Tabs, Space, Typography, Collapse } from 'antd';
+import { ThunderboltOutlined, DownOutlined } from '@ant-design/icons';
+import HeadersTab, { HeaderItem } from './HeadersTab';
+import AuthorizationTab, { AuthConfig } from './AuthorizationTab';
+import BodyTab, { BodyType, RawBodyType, FormDataItem } from './BodyTab';
+import RequestDuplication from './RequestDuplication';
+import RequestDiff from './RequestDiff';
+import { ApiRequest, HistoryItem } from '../types';
+
+const { Content } = Layout;
+const { Option } = Select;
+const { Text } = Typography;
+
+interface RequestPanelProps {
+  request: ApiRequest;
+  onRequestChange: (request: ApiRequest) => void;
+  onSendRequest: () => void;
+  onDuplicateRequest: (request: ApiRequest) => void;
+  history: HistoryItem[];
+  isSending: boolean;
+  hasValidationError: boolean;
+  responseText: string;
+  responseMeta: { status: number | null; durationMs: number; headers: Record<string, string>; size: number };
+  activeContentTab: string;
+  onContentTabChange: (tab: string) => void;
+}
+
+export default function RequestPanel({
+  request,
+  onRequestChange,
+  onSendRequest,
+  onDuplicateRequest,
+  history,
+  isSending,
+  hasValidationError,
+  responseText,
+  responseMeta,
+  activeContentTab,
+  onContentTabChange
+}: RequestPanelProps) {
+  const urlInputRef = useRef<any>(null);
+  const paramsTextAreaRef = useRef<any>(null);
+
+  // Local state for params textarea
+  const [paramsJson, setParamsJson] = useState(JSON.stringify(request.params || {}, null, 2));
+
+  // Update local state when request changes
+  useEffect(() => {
+    setParamsJson(JSON.stringify(request.params || {}, null, 2));
+  }, [request.params]);
+
+  // Parse request data
+  const method = request.method;
+  const url = request.url;
+  
+  // Convert headers from Record<string, string> to HeaderItem[]
+  const headers: HeaderItem[] = useMemo(() => {
+    const headerEntries = Object.entries(request.headers || {});
+    if (headerEntries.length === 0) {
+      // Return empty array - HeadersTabNew will handle adding default empty row
+      return [];
+    }
+    return headerEntries.map(([key, value], index) => ({
+      id: `header-${key}-${index}`, // Stable ID based on key and index
+      key,
+      value: String(value),
+      enabled: true
+    }));
+  }, [request.headers]);
+
+  // Parse body data
+  const bodyData = request.body || '';
+  const bodyType: BodyType = (request.bodyType as BodyType) || (bodyData ? 'raw' : 'none');
+  const rawBodyType: RawBodyType = (request.rawBodyType as RawBodyType) || 'json';
+  const rawBody = bodyData;
+  const formData: FormDataItem[] = (request.formData as FormDataItem[]) || [];
+  const urlEncoded: FormDataItem[] = (request.urlEncoded as FormDataItem[]) || [];
+
+  // Auth config
+  const auth: AuthConfig = request.auth ? {
+    type: request.auth.type as any,
+    apiKey: (request.auth as any).apiKey || { key: '', value: '', addTo: 'header' },
+    bearer: request.auth.bearer || { token: '' },
+    basic: request.auth.basic || { username: '', password: '' },
+    jwt: request.auth.jwt || { token: '' }
+  } : {
+    type: 'none',
+    apiKey: { key: '', value: '', addTo: 'header' },
+    bearer: { token: '' },
+    basic: { username: '', password: '' },
+    jwt: { token: '' }
+  };
+
+  // Validation helpers
+  const paramsError = useMemo(() => {
+    try { 
+      JSON.parse(paramsJson || '{}'); 
+      return null; 
+    } catch (e: any) { 
+      return 'Invalid JSON'; 
+    }
+  }, [paramsJson]);
+
+  const bodyError = useMemo(() => {
+    if (bodyType === 'raw' && rawBodyType === 'json' && rawBody) {
+      try {
+        JSON.parse(rawBody);
+        return null;
+      } catch {
+        return 'Invalid JSON';
+      }
+    }
+    return null;
+  }, [bodyType, rawBodyType, rawBody]);
+
+  const handleMethodChange = (newMethod: string) => {
+    onRequestChange({
+      ...request,
+      method: newMethod as any
+    });
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onRequestChange({
+      ...request,
+      url: e.target.value
+    });
+  };
+
+  const handleParamsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    console.log('Params changed:', newValue); // Debug log
+    setParamsJson(newValue); // Update local state immediately for responsive UI
+    
+    // Only update the request if JSON is valid
+    if (newValue.trim() === '') {
+      // Empty value - set empty object
+      onRequestChange({
+        ...request,
+        params: {}
+      });
+    } else {
+      try {
+        const params = JSON.parse(newValue);
+        console.log('Parsed params:', params); // Debug log
+        onRequestChange({
+          ...request,
+          params
+        });
+      } catch (error) {
+        console.log('JSON parse error:', error); // Debug log
+        // Don't update request state if JSON is invalid, but keep the text for editing
+      }
+    }
+  };
+
+  const handleHeadersChange = (newHeaders: HeaderItem[]) => {
+    // Convert HeaderItem[] back to Record<string, string>
+    const headersObj = newHeaders.reduce((acc, h) => {
+      if (h.enabled && h.key && h.key.trim() !== '') {
+        acc[h.key.trim()] = h.value || ''; // Allow empty values
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    onRequestChange({
+      ...request,
+      headers: headersObj
+    });
+  };
+
+  const handleBodyChange = (config: {
+    bodyType: BodyType;
+    rawBodyType: RawBodyType;
+    rawBody: string;
+    formData: FormDataItem[];
+    urlEncoded: FormDataItem[];
+  }) => {
+    console.log('Body changed:', config); // Debug log
+    onRequestChange({
+      ...request,
+      body: config.rawBody,
+      bodyType: config.bodyType as any,
+      rawBodyType: config.rawBodyType as any,
+      formData: config.formData as any,
+      urlEncoded: config.urlEncoded as any
+    });
+  };
+
+  const handleAuthChange = (newAuth: AuthConfig) => {
+    console.log('Auth changed:', newAuth); // Debug log
+    onRequestChange({
+      ...request,
+      auth: newAuth as any
+    });
+  };
+
+  const contentTabItems = [
+    {
+      key: 'params',
+      label: 'Query Params',
+      children: (
+        <>
+          <Input.TextArea 
+            ref={paramsTextAreaRef}
+            rows={8} 
+            value={paramsJson} 
+            onChange={handleParamsChange}
+            placeholder={`{\n  "page": "1"\n}`} 
+            status={paramsError ? 'error' as any : ''} 
+          />
+          {paramsError && <div style={{ color: '#ff4d4f', marginTop: 6, fontSize: 12 }}>{paramsError}</div>}
+        </>
+      ),
+    },
+    {
+      key: 'headers',
+      label: 'Headers',
+      children: (
+        <HeadersTab headers={headers} onChange={handleHeadersChange} />
+      ),
+    },
+    {
+      key: 'auth',
+      label: 'Authorization',
+      children: (
+        <AuthorizationTab auth={auth} onChange={handleAuthChange} />
+      ),
+    },
+    {
+      key: 'body',
+      label: 'Body',
+      children: (
+        <BodyTab 
+          bodyType={bodyType}
+          rawBodyType={rawBodyType}
+          rawBody={rawBody}
+          formData={formData}
+          urlEncoded={urlEncoded}
+          onChange={handleBodyChange}
+        />
+      ),
+    },
+    {
+      key: 'response',
+      label: 'Response',
+      children: (
+        <div>
+          {/* Response Status Bar */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 12, 
+            marginBottom: 16,
+            padding: '8px 12px',
+            background: '#f5f5f5',
+            borderRadius: 4
+          }}>
+            <Text strong>Response</Text>
+            {responseMeta.status && (
+              <>
+                <Text 
+                  style={{ 
+                    color: getStatusColor(responseMeta.status),
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  {responseMeta.status}
+                </Text>
+                <Text style={{ color: '#666', fontSize: '12px' }}>
+                  {responseMeta.durationMs}ms
+                </Text>
+                <Text style={{ color: '#666', fontSize: '12px' }}>
+                  {formatBytes(responseMeta.size)}
+                </Text>
+              </>
+            )}
+          </div>
+
+          {/* Response Headers Dropdown */}
+          {Object.keys(responseMeta.headers).length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              <Collapse
+                size="small"
+                items={[
+                  {
+                    key: 'headers',
+                    label: (
+                      <Text strong style={{ fontSize: '13px' }}>
+                        Headers ({Object.keys(responseMeta.headers).length})
+                      </Text>
+                    ),
+                    children: (
+                      <div style={{ 
+                        background: '#fafafa', 
+                        padding: 8, 
+                        borderRadius: 4,
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        height: '200px',
+                        overflowY: 'auto',
+                        border: '1px solid #d9d9d9'
+                      }}>
+                        {Object.entries(responseMeta.headers).map(([key, value]) => (
+                          <div key={key} style={{ marginBottom: 4, wordBreak: 'break-all' }}>
+                            <Text strong style={{ color: '#1890ff' }}>{key}:</Text> {value}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
+                ]}
+              />
+            </div>
+          )}
+          
+          {/* Response Body Dropdown */}
+          {responseText && (
+            <div>
+              <Collapse
+                size="small"
+                defaultActiveKey={['body']}
+                items={[
+                  {
+                    key: 'body',
+                    label: (
+                      <Text strong style={{ fontSize: '13px' }}>
+                        Body ({formatBytes(responseText.length)})
+                      </Text>
+                    ),
+                    children: (
+                      <div style={{ 
+                        height: '300px',
+                        overflow: 'hidden'
+                      }}>
+                        <Input.TextArea 
+                          value={responseText} 
+                          readOnly 
+                          placeholder="Response will appear here..."
+                          style={{ 
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            height: '100%',
+                            resize: 'none',
+                            border: '1px solid #d9d9d9'
+                          }}
+                        />
+                      </div>
+                    )
+                  }
+                ]}
+              />
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <Content style={{ padding: '24px', margin: 0, background: '#F5F5F5', height: '100%', overflow: 'auto' }}>
+      {/* Request Builder */}
+      <Flex gap="small" align="center" style={{ marginBottom: '20px' }}>
+        <Select value={method} onChange={handleMethodChange} style={{ width: 120 }}>
+          <Option value="GET">GET</Option>
+          <Option value="POST">POST</Option>
+          <Option value="PUT">PUT</Option>
+          <Option value="DELETE">DELETE</Option>
+          <Option value="PATCH">PATCH</Option>
+          <Option value="HEAD">HEAD</Option>
+          <Option value="OPTIONS">OPTIONS</Option>
+        </Select>
+        <Input 
+          ref={urlInputRef}
+          placeholder="https://api.example.com/resource" 
+          value={url} 
+          onChange={handleUrlChange}
+          style={{ flex: 1 }}
+        />
+        <Button 
+          type="primary" 
+          onClick={onSendRequest} 
+          loading={isSending} 
+          disabled={isSending || hasValidationError}
+          icon={<ThunderboltOutlined />}
+        >
+          Send
+        </Button>
+        
+        {/* Request Duplication Button */}
+        <RequestDuplication 
+          request={request} 
+          onDuplicate={onDuplicateRequest}
+        />
+        
+        {/* Request Diff Button */}
+        <RequestDiff 
+          currentRequest={request}
+          history={history}
+        />
+      </Flex>
+
+      {/* Content Tabs */}
+      <div data-tour="request-tabs-content">
+        <Tabs
+          activeKey={activeContentTab}
+          onChange={onContentTabChange}
+          items={contentTabItems}
+          style={{ marginTop: 20 }}
+        />
+      </div>
+
+    </Content>
+  );
+}
+
+// Helper function to get status code color
+function getStatusColor(status: number): string {
+  if (status >= 200 && status < 300) return '#52c41a'; // Green for success
+  if (status >= 300 && status < 400) return '#1890ff'; // Blue for redirect
+  if (status >= 400 && status < 500) return '#faad14'; // Orange for client error
+  if (status >= 500) return '#ff4d4f'; // Red for server error
+  return '#666'; // Gray for other status codes
+}
+
+// Helper function to format bytes
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create App Icon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .icon-canvas {
+            width: 512px;
+            height: 512px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #1890ff, #40a9ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 120px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin: 20px auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .instructions {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .download-btn {
+            background: #1890ff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .download-btn:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h1>🎨 RockApiClient App Icon</h1>
+        <p>This is a simple placeholder icon for your app. You can:</p>
+        
+        <div class="icon-canvas" id="iconCanvas">
+            RAC
+        </div>
+        
+        <h3>📥 Download Options:</h3>
+        <button class="download-btn" onclick="downloadIcon('png')">Download PNG (512x512)</button>
+        <button class="download-btn" onclick="downloadIcon('ico')">Download ICO (Windows)</button>
+        
+        <h3>🔄 How to Use:</h3>
+        <ol>
+            <li>Click "Download PNG" to get the 512x512 PNG file</li>
+            <li>Save it as <code>public/icon.png</code> in your project</li>
+            <li>For Windows, you can use online converters to create <code>icon.ico</code></li>
+            <li>For macOS, you can use online converters to create <code>icon.icns</code></li>
+        </ol>
+        
+        <h3>🎨 Customize:</h3>
+        <p>You can modify the colors, text, or design by editing this HTML file and regenerating the icon.</p>
+    </div>
+
+    <script>
+        function downloadIcon(format) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+            gradient.addColorStop(0, '#1890ff');
+            gradient.addColorStop(1, '#40a9ff');
+            
+            // Draw background
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Add rounded corners
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, 512, 512, 20);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 120px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.fillText('RAC', 256, 256);
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = `rockapiclient-icon.${format}`;
+            link.href = canvas.toDataURL(`image/${format}`);
+            link.click();
+        }
+        
+        // Add roundRect polyfill for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>
