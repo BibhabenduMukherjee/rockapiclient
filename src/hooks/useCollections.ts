@@ -68,7 +68,7 @@ export function useCollections() {
             ...collection,
             requests: collection.requests.map(req =>
               req.key === node.key && node.type === 'request'
-                ? { ...req, title: newName }
+                ? { ...req, title: newName, name: newName }
                 : req
             ),
           };
@@ -80,17 +80,28 @@ export function useCollections() {
   };
 
   const deleteNode = (node: TreeNode) => {
+    console.log('🗑️ deleteNode called with:', node);
+    console.log('🗑️ Current collections before deletion:', collections);
+    
     if (node.type === 'collection') {
-      setCollections(current => current.filter(c => c.key !== node.key));
+      console.log('🗑️ Deleting collection:', node.key);
+      setCollections(current => {
+        const filtered = current.filter(c => c.key !== node.key);
+        console.log('🗑️ Collections after deletion:', filtered);
+        return filtered;
+      });
       message.success('Collection deleted.');
     } else if (node.type === 'request') {
-      setCollections(current =>
-        current.map(c =>
+      console.log('🗑️ Deleting request:', node.key, 'from collection:', node.collectionKey);
+      setCollections(current => {
+        const updated = current.map(c =>
           c.key === node.collectionKey
             ? { ...c, requests: c.requests.filter(r => r.key !== node.key) }
             : c
-        )
-      );
+        );
+        console.log('🗑️ Collections after request deletion:', updated);
+        return updated;
+      });
       message.success('Request deleted.');
     }
   };
