@@ -25,7 +25,7 @@ RockApiClient is available for **macOS**, **Windows**, and **Linux**. Choose you
 ### **GitHub Releases Page**
 Visit our official releases page to download the latest version:
 ```
-https://github.com/YOUR_USERNAME/YOUR_REPO/releases
+https://github.com/BibhabenduMukherjee/rockapiclient/releases
 ```
 
 ### **Latest Release**
