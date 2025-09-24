@@ -1,4 +1,4 @@
-name: Build and Deploy to GitHub Pages
+name: Build and Deploy (Pages Disabled)
 
 on:
   push:
@@ -56,12 +56,12 @@ jobs:
     
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      # pages: write
+      # id-token: write
       
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
       
     steps:
     - name: Checkout
@@ -73,10 +73,10 @@ jobs:
         name: electron-app-build
         path: dist/
         
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      with:
-        enablement: true
+    # - name: Setup Pages
+    #   uses: actions/configure-pages@v4
+    #   with:
+    #     enablement: true
       
     - name: Create deployment package
       run: |
@@ -226,11 +226,11 @@ jobs:
         </html>
         EOF
         
-    - name: Upload to GitHub Pages
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: public
+    # - name: Upload to GitHub Pages
+    #   uses: actions/upload-pages-artifact@v3
+    #   with:
+    #     path: public
         
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+    # - name: Deploy to GitHub Pages
+    #   id: deployment
+    #   uses: actions/deploy-pages@v4

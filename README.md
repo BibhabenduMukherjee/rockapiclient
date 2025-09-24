@@ -7,7 +7,7 @@
 
 ## 📥 Download
 
-**Latest Release:** [Download RockApiClient](https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest)
+**Latest Release:** [Download RockApiClient](https://github.com/BibhabenduMukherjee/rockapiclient/releases/latest)
 
 ### Supported Platforms:
 - 🍎 **macOS** (Intel & Apple Silicon) - `.dmg` installer
@@ -15,7 +15,7 @@
 - 🐧 **Linux** (x64) - `.AppImage` or `.deb` package
 
 ### Quick Install:
-1. Go to [Releases](https://github.com/YOUR_USERNAME/YOUR_REPO/releases)
+1. Go to [Releases](https://github.com/BibhabenduMukherjee/rockapiclient/releases)
 2. Download the installer for your platform
 3. Run the installer and start testing APIs!
 
