@@ -1,15 +1,26 @@
-// It's good practice to define the shape of your data.
 
 export interface ApiRequest {
   key: string;
   title: string;
   name?: string; // For duplication functionality
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
   url: string;
   params?: Record<string, string>;
   headers?: Record<string, string>;
   body?: string;
   collectionKey?: string; // For tracking which collection this request belongs to
+  // Body configuration fields
+  bodyType?: 'none' | 'raw' | 'form-data' | 'url-encoded';
+  rawBodyType?: 'json' | 'text' | 'xml' | 'html';
+  formData?: Array<{key: string, value: string, enabled: boolean}>;
+  urlEncoded?: Array<{key: string, value: string, enabled: boolean}>;
+  // Auth configuration
+  auth?: {
+    type: 'none' | 'basic' | 'bearer' | 'jwt';
+    basic: { username: string; password: string };
+    bearer: { token: string };
+    jwt: { token: string };
+  };
 }
 
 export interface Collection {
