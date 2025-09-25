@@ -32,15 +32,10 @@
       "package.json",
       "preload.js"
     ],
-    "extraFiles": [],
-    "extraResources": [],
     "asar": true,
     "compression": "maximum",
     "removePackageScripts": true,
     "removePackageKeywords": true,
-    "nodeGypRebuild": false,
-    "buildDependenciesFromSource": false,
-    "npmRebuild": false,
     "mac": {
       "target": [
         {
@@ -59,9 +54,7 @@
         }
       ],
       "category": "public.app-category.utilities",
-      "icon": "public/icon.icns",
-      "compression": "maximum",
-      "artifactName": "${productName}-${version}-${arch}-mac.${ext}"
+      "icon": "public/icon.icns"
     },
     "win": {
       "target": [
@@ -78,10 +71,7 @@
           ]
         }
       ],
-      "icon": "public/icon.ico",
-      "compression": "maximum",
-      "artifactName": "${productName}-${version}-${arch}-win.${ext}",
-      "requestedExecutionLevel": "asInvoker"
+      "icon": "public/icon.ico"
     },
     "linux": {
       "target": [
@@ -100,9 +90,7 @@
       ],
       "category": "Utility",
       "icon": "public/icon.png",
-      "maintainer": "RockApiClient Team <team@rockapiclient.com>",
-      "compression": "maximum",
-      "artifactName": "${productName}-${version}-${arch}-linux.${ext}"
+      "maintainer": "RockApiClient Team <team@rockapiclient.com>"
     },
     "nsis": {
       "oneClick": false,

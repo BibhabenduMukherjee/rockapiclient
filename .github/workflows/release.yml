@@ -164,8 +164,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64-mac.dmg
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64-mac.dmg
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.dmg
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64.dmg
         asset_content_type: application/octet-stream
         
     - name: Upload macOS DMG (x64)
@@ -174,8 +174,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64-mac.dmg
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64-mac.dmg
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.dmg
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64.dmg
         asset_content_type: application/octet-stream
         
     - name: Upload macOS ZIP (ARM64)
@@ -184,8 +184,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64-mac.zip
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64-mac.zip
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64.zip
         asset_content_type: application/zip
         
     - name: Upload macOS ZIP (x64)
@@ -194,8 +194,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64-mac.zip
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64-mac.zip
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64.zip
         asset_content_type: application/zip
         
     - name: Upload Windows installer
@@ -214,8 +214,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-win/dist/RockApiClient-1.0.0-x64-win.zip
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64-win.zip
+        asset_path: artifacts/electron-app-win/dist/RockApiClient-1.0.0-win.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-win.zip
         asset_content_type: application/zip
         
     - name: Upload Linux AppImage
@@ -224,8 +224,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-linux/dist/RockApiClient-1.0.0-x64-linux.AppImage
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64-linux.AppImage
+        asset_path: artifacts/electron-app-linux/dist/RockApiClient-1.0.0.AppImage
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}.AppImage
         asset_content_type: application/octet-stream
         
     - name: Upload Linux deb
@@ -235,5 +235,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/electron-app-linux/dist/rock-api-client_1.0.0_amd64.deb
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64-linux.deb
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}.deb
         asset_content_type: application/vnd.debian.binary-package

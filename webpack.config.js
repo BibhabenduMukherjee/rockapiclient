@@ -1,19 +1,12 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = (env, argv) => {
-  const isProduction = argv.mode === 'production';
-  
-  return {
+module.exports = {
   target: 'electron-renderer',
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    clean: true,
-  },
-  optimization: {
-    minimize: isProduction,
   },
   module: {
     rules: [
@@ -49,5 +42,4 @@ module.exports = (env, argv) => {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
   },
-  };
 };
