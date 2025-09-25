@@ -61,33 +61,20 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y imagemagick
         
+        # Install png2icons for proper ICNS generation
+        npm install -g png2icons
+        
         # Generate ICO file for Windows (with multiple sizes)
         convert public/icon.png -resize 16x16 public/icon-16.png
         convert public/icon.png -resize 32x32 public/icon-32.png
         convert public/icon.png -resize 256x256 public/icon-256.png
         convert public/icon-16.png public/icon-32.png public/icon-256.png public/icon.ico
         
-        # Generate ICNS file for macOS
-        # Create iconset directory
-        mkdir -p public/icon.iconset
-        
-        # Generate different sizes for ICNS
-        convert public/icon.png -resize 16x16 public/icon.iconset/icon_16x16.png
-        convert public/icon.png -resize 32x32 public/icon.iconset/icon_16x16@2x.png
-        convert public/icon.png -resize 32x32 public/icon.iconset/icon_32x32.png
-        convert public/icon.png -resize 64x64 public/icon.iconset/icon_32x32@2x.png
-        convert public/icon.png -resize 128x128 public/icon.iconset/icon_128x128.png
-        convert public/icon.png -resize 256x256 public/icon.iconset/icon_128x128@2x.png
-        convert public/icon.png -resize 256x256 public/icon.iconset/icon_256x256.png
-        convert public/icon.png -resize 512x512 public/icon.iconset/icon_256x256@2x.png
-        convert public/icon.png -resize 512x512 public/icon.iconset/icon_512x512.png
-        convert public/icon.png -resize 1024x1024 public/icon.iconset/icon_512x512@2x.png
-        
-        # Create ICNS file
-        iconutil -c icns public/icon.iconset -o public/icon.icns
+        # Generate ICNS file for macOS using png2icons
+        png2icons public/icon.png public/icon.icns -icns
         
         # Clean up temporary files
-        rm -rf public/icon.iconset public/icon-*.png
+        rm -f public/icon-*.png
         
         echo "Generated icons:"
         ls -la public/icon.*
