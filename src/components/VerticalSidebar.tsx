@@ -4,6 +4,7 @@ import {
   FolderOutlined, 
   ExperimentOutlined, 
   HistoryOutlined, 
+  StarOutlined,
   PlusOutlined, 
   EditOutlined, 
   DeleteOutlined,
@@ -15,6 +16,7 @@ import { useCollections } from '../hooks/useCollections';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { HistoryItem, ApiRequest } from '../types';
 import HistorySearch from './HistorySearch';
+import BookmarksPanel from './BookmarksPanel';
 
 const { Sider } = Layout;
 const { Text, Title } = Typography;
@@ -29,6 +31,7 @@ interface VerticalSidebarProps {
   onHistorySearch: (filteredHistory: HistoryItem[]) => void;
   filteredHistory: HistoryItem[];
   onClearHistory: () => void;
+  bookmarks: any[];
 }
 
 export default function VerticalSidebar({
@@ -38,7 +41,8 @@ export default function VerticalSidebar({
   history,
   onHistorySearch,
   filteredHistory,
-  onClearHistory
+  onClearHistory,
+  bookmarks
 }: VerticalSidebarProps) {
   const [isAddCollectionModalVisible, setIsAddCollectionModalVisible] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
@@ -229,6 +233,12 @@ export default function VerticalSidebar({
       icon: <FolderOutlined />,
       label: 'Collections',
       count: collections.length
+    },
+    {
+      key: 'bookmarks',
+      icon: <StarOutlined />,
+      label: 'Bookmarks',
+      count: bookmarks.length
     },
     {
       key: 'environments',
@@ -505,6 +515,10 @@ export default function VerticalSidebar({
                 }))}
               />
             </div>
+          )}
+
+          {activeTab === 'bookmarks' && (
+            <BookmarksPanel onSelectRequest={onSelectRequest} />
           )}
 
           {activeTab === 'environments' && (
