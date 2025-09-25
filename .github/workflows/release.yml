@@ -65,8 +65,12 @@ jobs:
       with:
         name: electron-app-${{ matrix.artifact }}
         path: |
-          dist/
-          !dist/*/
+          dist/*.dmg
+          dist/*.zip
+          dist/*.exe
+          dist/*.AppImage
+          dist/*.deb
+          dist/*.blockmap
         retention-days: 30
 
   release:
@@ -104,9 +108,9 @@ jobs:
         echo "=== Checking artifact directories ==="
         find artifacts -type f -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" | head -20
         echo "=== Checking specific paths ==="
-        ls -la artifacts/electron-app-mac/dist/ || echo "macOS dist not found"
-        ls -la artifacts/electron-app-win/dist/ || echo "Windows dist not found"
-        ls -la artifacts/electron-app-linux/dist/ || echo "Linux dist not found"
+        ls -la artifacts/electron-app-mac/ || echo "macOS artifacts not found"
+        ls -la artifacts/electron-app-win/ || echo "Windows artifacts not found"
+        ls -la artifacts/electron-app-linux/ || echo "Linux artifacts not found"
         
     - name: Create or Update Release
       id: create_release
@@ -167,9 +171,9 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          artifacts/electron-app-mac/dist/*.dmg
-          artifacts/electron-app-mac/dist/*.zip
-          artifacts/electron-app-win/dist/*.exe
-          artifacts/electron-app-win/dist/*.zip
-          artifacts/electron-app-linux/dist/*.AppImage
-          artifacts/electron-app-linux/dist/*.deb
+          artifacts/electron-app-mac/*.dmg
+          artifacts/electron-app-mac/*.zip
+          artifacts/electron-app-win/*.exe
+          artifacts/electron-app-win/*.zip
+          artifacts/electron-app-linux/*.AppImage
+          artifacts/electron-app-linux/*.deb
