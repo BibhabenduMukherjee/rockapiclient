@@ -55,30 +55,6 @@ jobs:
     - name: Build application
       run: npm run build
       
-    - name: Generate platform icons
-      run: |
-        # Install ImageMagick
-        sudo apt-get update
-        sudo apt-get install -y imagemagick
-        
-        # Install png2icons for proper ICNS generation
-        npm install -g png2icons
-        
-        # Generate ICO file for Windows (with multiple sizes)
-        convert public/icon.png -resize 16x16 public/icon-16.png
-        convert public/icon.png -resize 32x32 public/icon-32.png
-        convert public/icon.png -resize 256x256 public/icon-256.png
-        convert public/icon-16.png public/icon-32.png public/icon-256.png public/icon.ico
-        
-        # Generate ICNS file for macOS using png2icons
-        png2icons public/icon.png public/icon.icns -icns
-        
-        # Clean up temporary files
-        rm -f public/icon-*.png
-        
-        echo "Generated icons:"
-        ls -la public/icon.*
-      
     - name: Build Electron app for ${{ matrix.platform }}
       run: npm run dist
       env:
