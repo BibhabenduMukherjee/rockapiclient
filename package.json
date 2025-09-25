@@ -38,7 +38,6 @@
     "compression": "maximum",
     "removePackageScripts": true,
     "removePackageKeywords": true,
-    "removePackageDevDependencies": true,
     "nodeGypRebuild": false,
     "buildDependenciesFromSource": false,
     "npmRebuild": false,
