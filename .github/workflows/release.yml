@@ -158,24 +158,44 @@ jobs:
         draft: false
         prerelease: false
         
-    - name: Upload macOS artifacts
+    - name: Upload macOS DMG (ARM64)
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.dmg
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-mac-arm64.dmg
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64.dmg
         asset_content_type: application/octet-stream
         
-    - name: Upload macOS zip
+    - name: Upload macOS DMG (x64)
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64-mac.zip
-        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-mac-arm64.zip
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.dmg
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64.dmg
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS ZIP (ARM64)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-arm64.zip
+        asset_content_type: application/zip
+        
+    - name: Upload macOS ZIP (x64)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.zip
+        asset_name: RockApiClient-${{ steps.get_version.outputs.version }}-x64.zip
         asset_content_type: application/zip
         
     - name: Upload Windows installer
