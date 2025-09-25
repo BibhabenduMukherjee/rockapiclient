@@ -99,6 +99,15 @@ jobs:
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
         fi
         
+    - name: List available files for debugging
+      run: |
+        echo "=== Checking artifact directories ==="
+        find artifacts -type f -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" | head -20
+        echo "=== Checking specific paths ==="
+        ls -la artifacts/electron-app-mac/dist/ || echo "macOS dist not found"
+        ls -la artifacts/electron-app-win/dist/ || echo "Windows dist not found"
+        ls -la artifacts/electron-app-linux/dist/ || echo "Linux dist not found"
+        
     - name: Create or Update Release
       id: create_release
       uses: softprops/action-gh-release@v1
@@ -158,11 +167,9 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.dmg
-          artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.dmg
-          artifacts/electron-app-mac/dist/RockApiClient-1.0.0-arm64.zip
-          artifacts/electron-app-mac/dist/RockApiClient-1.0.0-x64.zip
-          artifacts/electron-app-win/dist/RockApiClient Setup 1.0.0.exe
-          artifacts/electron-app-win/dist/RockApiClient-1.0.0-win.zip
-          artifacts/electron-app-linux/dist/RockApiClient-1.0.0.AppImage
-          artifacts/electron-app-linux/dist/rock-api-client_1.0.0_amd64.deb
+          artifacts/electron-app-mac/dist/*.dmg
+          artifacts/electron-app-mac/dist/*.zip
+          artifacts/electron-app-win/dist/*.exe
+          artifacts/electron-app-win/dist/*.zip
+          artifacts/electron-app-linux/dist/*.AppImage
+          artifacts/electron-app-linux/dist/*.deb
