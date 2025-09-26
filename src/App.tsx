@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Layout, Modal, message, Select, Typography } from 'antd';
-import { SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Layout, Modal, message, Select, Typography, Button } from 'antd';
+import { SettingOutlined, ThunderboltOutlined, StarFilled, StarOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useCollections } from './hooks/useCollections';
 import { useEnvironments, substituteTemplate } from './hooks/useEnvironments';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
+import { useBookmarks } from './hooks/useBookmarks';
+import { useFirstLaunch } from './hooks/useFirstLaunch';
 import VerticalSidebar from './components/VerticalSidebar';
 import RequestTabs from './components/RequestTabs';
 import RequestPanel from './components/RequestPanel';
@@ -12,6 +14,8 @@ import CommandPalette from './components/CommandPalette';
 import RequestTemplates from './components/RequestTemplates';
 import ThemeSettings from './components/ThemeSettings';
 import AppTour, { TourButton } from './components/AppTour';
+import BookmarksPanel from './components/BookmarksPanel';
+import MoodSelector from './components/MoodSelector';
 import { showRequestSuccess, showRequestError, showCollectionSaved } from './components/EnhancedNotifications';
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
@@ -118,6 +122,12 @@ function App() {
   // Environment management
   const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
   
+  // Bookmarks management
+  const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+  
+  // Response time data for charts
+  const [responseTimeData, setResponseTimeData] = useState<Array<{ timestamp: number; duration: number; status: number; url: string }>>([]);
+  
   // Code generation modal
   const [isCodeGenModalVisible, setIsCodeGenModalVisible] = useState(false);
   const [codeGenType, setCodeGenType] = useState<CodeGenType>('curl');
@@ -133,7 +143,11 @@ function App() {
   const paramsTextAreaRef = useRef<any>(null);
   
   // Theme and keyboard shortcuts
-  const { settings: themeSettings } = useTheme();
+  const { settings: themeSettings, setTheme } = useTheme();
+  
+  // First launch and mood selection
+  const { isFirstLaunch, isChecking, markAsLaunched } = useFirstLaunch();
+  const [showMoodSelector, setShowMoodSelector] = useState(false);
   
   // Focus handlers
   const handleFocusUrl = useCallback(() => {
@@ -165,6 +179,13 @@ function App() {
     setActiveTab('environments');
   }, []);
 
+  // Handle mood selection
+  const handleMoodSelect = useCallback((mood: string) => {
+    setTheme(mood);
+    markAsLaunched();
+    setShowMoodSelector(false);
+  }, [setTheme, markAsLaunched]);
+
   // Load history on mount
   useEffect(() => {
     // @ts-ignore
@@ -176,6 +197,13 @@ function App() {
       }).catch(() => {});
     }
   }, []);
+
+  // Show mood selector on first launch
+  useEffect(() => {
+    if (!isChecking && isFirstLaunch) {
+      setShowMoodSelector(true);
+    }
+  }, [isChecking, isFirstLaunch]);
 
   // Handle history search
   const handleHistorySearch = (filtered: HistoryItem[]) => {
@@ -277,6 +305,17 @@ function App() {
       setHistory(prev => [result.historyItem, ...prev.slice(0, 99)]);
       setFilteredHistory(prev => [result.historyItem, ...prev.slice(0, 99)]);
       
+      // Add to response time data for charts
+      setResponseTimeData(prev => [
+        {
+          timestamp: Date.now(),
+          duration: result.responseMeta.durationMs,
+          status: result.responseMeta.status || 0,
+          url: substitutedUrl
+        },
+        ...prev.slice(0, 49) // Keep last 50 data points
+      ]);
+      
       showRequestSuccess(result.responseMeta.durationMs, result.responseMeta.status || 0);
     } catch (err: any) {
       console.error('Request failed:', err);
@@ -344,6 +383,29 @@ function App() {
           <div data-tour="header-actions">
             <TourButton onStartTour={() => setIsTourVisible(true)} />
             <button
+              onClick={() => {
+                if (isBookmarked(activeRequest)) {
+                  removeBookmark(activeRequest);
+                } else {
+                  addBookmark(activeRequest);
+                }
+              }}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: isBookmarked(activeRequest) ? '#faad14' : 'var(--theme-text)', 
+                cursor: 'pointer',
+                marginRight: '16px',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                transition: 'all 0.3s ease'
+              }}
+              title={isBookmarked(activeRequest) ? "Remove bookmark" : "Bookmark this request"}
+            >
+              {isBookmarked(activeRequest) ? <StarFilled style={{ marginRight: '8px' }} /> : <StarOutlined style={{ marginRight: '8px' }} />}
+              {isBookmarked(activeRequest) ? 'Bookmarked' : 'Bookmark'}
+            </button>
+            <button
               onClick={() => setIsTemplatesModalVisible(true)}
               style={{ 
                 background: 'none', 
@@ -391,6 +453,7 @@ function App() {
             onHistorySearch={handleHistorySearch}
             filteredHistory={filteredHistory}
             onClearHistory={() => setHistory([])}
+            bookmarks={bookmarks}
           />
         </div>
         
@@ -421,8 +484,9 @@ function App() {
               responseMeta={responseMeta}
               activeContentTab={activeContentTab}
               onContentTabChange={setActiveContentTab}
+              responseTimeData={responseTimeData}
             />
-              </div>
+          </div>
         </Layout>
       </Layout>
 
@@ -494,6 +558,16 @@ function App() {
       <AppTour
         isOpen={isTourVisible}
         onClose={() => setIsTourVisible(false)}
+      />
+      
+      {/* Mood Selector - First Launch */}
+      <MoodSelector
+        visible={showMoodSelector}
+        onSelectMood={handleMoodSelect}
+        onClose={() => {
+          setShowMoodSelector(false);
+          markAsLaunched();
+        }}
       />
       
       {/* Tour completion element (hidden) */}

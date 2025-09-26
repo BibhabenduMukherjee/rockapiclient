@@ -76,7 +76,6 @@ export function useCollections() {
         return collection;
       })
     );
-    message.success('Renamed successfully.');
   };
 
   const deleteNode = (node: TreeNode) => {
@@ -90,7 +89,6 @@ export function useCollections() {
         console.log('🗑️ Collections after deletion:', filtered);
         return filtered;
       });
-      message.success('Collection deleted.');
     } else if (node.type === 'request') {
       console.log('🗑️ Deleting request:', node.key, 'from collection:', node.collectionKey);
       setCollections(current => {
@@ -102,7 +100,6 @@ export function useCollections() {
         console.log('🗑️ Collections after request deletion:', updated);
         return updated;
       });
-      message.success('Request deleted.');
     }
   };
 
