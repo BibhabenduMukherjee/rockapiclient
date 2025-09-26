@@ -22,24 +22,24 @@
 ## ✨ Features
 
 ### 🚀 Core API Testing
-- **HTTP Methods**: GET, POST, PUT, DELETE with full support
-- **Request Builder**: URL, query parameters, headers, and body composition
-- **Multiple Body Types**: JSON, form-data, URL-encoded, raw text
-- **Real-time Validation**: JSON syntax checking and error highlighting
-- **Request History**: Persistent storage with search and filtering
-- **Response Analysis**: Status codes, timing, size, headers, and formatted body
+- **HTTP Methods**: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- **Request Builder**: Intuitive URL, query parameters, headers, and body composition
+- **Multiple Body Types**: JSON, form-data, URL-encoded, raw text, XML, HTML
+- **Real-time Validation**: JSON syntax checking with error highlighting
+- **Request History**: Persistent storage with advanced search and filtering
+- **Response Analysis**: Status codes, timing, size, headers, and formatted response body
 
 ### 🎨 User Experience
-- **Keyboard Shortcuts**: Power-user productivity with Ctrl+Enter, Ctrl+/, etc.
+- **Keyboard Shortcuts**: Power-user productivity (Ctrl+Enter to send, Ctrl+/ for command palette)
 - **Command Palette**: Quick access to all features with fuzzy search
-- **Request Templates**: Pre-built templates for common API patterns
+- **Request Templates**: Pre-built templates for REST APIs, e-commerce, social media, and cloud services
 - **Enhanced Notifications**: Smart notifications with retry options and actions
-- **Theme System**: 4 built-in themes + custom color customization
-- **Responsive Design**: Adaptive layout for different screen sizes
+- **Theme System**: 4 built-in themes (Light, Dark, High Contrast, Blue Ocean) + custom color customization
+- **App Tour**: Interactive onboarding for new users
 
 ### 🔐 Authentication & Security
-- **Multiple Auth Types**: API Key, Bearer Token, Basic Auth, JWT
-- **Environment Variables**: Secure variable substitution with encryption
+- **Multiple Auth Types**: Basic Auth, Bearer Token, JWT
+- **Environment Variables**: Secure variable substitution with template support
 - **Request/Response Security**: Safe handling of sensitive data
 
 ### 📊 Advanced Features
@@ -48,13 +48,15 @@
 - **Code Generation**: Export requests as cURL, fetch, axios, HTTPie
 - **Collection Management**: Organize requests into collections with CRUD operations
 - **Environment Management**: Multiple environments with variable substitution
+- **Bookmarks**: Save and organize favorite requests
+- **Response Analytics**: Performance metrics and response time charts
 
 ### 🎯 Developer Productivity
-- **Auto-completion**: Smart suggestions for URLs and headers
 - **Request Persistence**: Automatic saving of request configurations
 - **History Search**: Advanced filtering by method, status, date, URL patterns
 - **Bulk Operations**: Multi-select operations on history items
 - **Import/Export**: Collection sharing via JSON format
+- **Mood Selector**: Customize UI based on your working mood
 
 ## 🚀 Getting Started
 
