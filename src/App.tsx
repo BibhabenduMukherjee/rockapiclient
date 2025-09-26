@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Layout, Modal, message, Select, Typography } from 'antd';
-import { SettingOutlined, ThunderboltOutlined, BarChartOutlined } from '@ant-design/icons';
-
 import { Layout, Modal, message, Select, Typography, Button } from 'antd';
 import { SettingOutlined, ThunderboltOutlined, StarFilled, StarOutlined, BarChartOutlined } from '@ant-design/icons';
 
@@ -550,6 +547,9 @@ function App() {
           rawBody: activeRequest?.body || '',
           urlEncoded: activeRequest?.urlEncoded || [],
           activeEnvVars: envState.items.find(env => env.key === envState.activeKey)?.variables || {}
+        }}
+      />
+      
       {/* Mood Selector - First Launch */}
       <MoodSelector
         visible={showMoodSelector}
