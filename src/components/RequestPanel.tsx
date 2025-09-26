@@ -6,6 +6,7 @@ import AuthorizationTab, { AuthConfig } from './AuthorizationTab';
 import BodyTab, { BodyType, RawBodyType, FormDataItem } from './BodyTab';
 import RequestDuplication from './RequestDuplication';
 import RequestDiff from './RequestDiff';
+import ResponseAnalytics from './ResponseAnalytics';
 import { ApiRequest, HistoryItem } from '../types';
 
 const { Content } = Layout;
@@ -24,6 +25,7 @@ interface RequestPanelProps {
   responseMeta: { status: number | null; durationMs: number; headers: Record<string, string>; size: number };
   activeContentTab: string;
   onContentTabChange: (tab: string) => void;
+  responseTimeData: Array<{ timestamp: number; duration: number; status: number; url: string }>;
 }
 
 export default function RequestPanel({
@@ -37,7 +39,8 @@ export default function RequestPanel({
   responseText,
   responseMeta,
   activeContentTab,
-  onContentTabChange
+  onContentTabChange,
+  responseTimeData
 }: RequestPanelProps) {
   const urlInputRef = useRef<any>(null);
   const paramsTextAreaRef = useRef<any>(null);
@@ -411,6 +414,9 @@ export default function RequestPanel({
           style={{ marginTop: 20 }}
         />
       </div>
+
+      {/* Response Analytics */}
+      <ResponseAnalytics responseTimeData={responseTimeData} />
 
     </Content>
   );

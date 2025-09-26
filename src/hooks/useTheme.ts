@@ -131,6 +131,111 @@ export const defaultThemes: Theme[] = [
       borderRadius: 8,
       spacing: 16
     }
+  },
+  // Mood-based themes
+  {
+    name: 'mood-happy',
+    displayName: 'Sunshine ☀️',
+    colors: {
+      primary: '#ff6b35',
+      secondary: '#f7931e',
+      background: '#fff8e1',
+      surface: '#ffecb3',
+      text: '#e65100',
+      textSecondary: '#ff8f00',
+      border: '#ffcc02',
+      success: '#4caf50',
+      warning: '#ff9800',
+      error: '#f44336',
+      info: '#ff6b35'
+    },
+    fonts: {
+      family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      size: 14
+    },
+    layout: {
+      sidebarWidth: 300,
+      borderRadius: 12,
+      spacing: 16
+    }
+  },
+  {
+    name: 'mood-calm',
+    displayName: 'Zen Garden 🌿',
+    colors: {
+      primary: '#4a6741',
+      secondary: '#6b8e6b',
+      background: '#f1f8e9',
+      surface: '#e8f5e8',
+      text: '#2e4a2e',
+      textSecondary: '#5a7c5a',
+      border: '#a5c99a',
+      success: '#4caf50',
+      warning: '#8bc34a',
+      error: '#d32f2f',
+      info: '#4a6741'
+    },
+    fonts: {
+      family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      size: 14
+    },
+    layout: {
+      sidebarWidth: 300,
+      borderRadius: 10,
+      spacing: 18
+    }
+  },
+  {
+    name: 'mood-creative',
+    displayName: 'Purple Dreams 💜',
+    colors: {
+      primary: '#7b1fa2',
+      secondary: '#9c27b0',
+      background: '#fce4ec',
+      surface: '#f8bbd9',
+      text: '#4a148c',
+      textSecondary: '#7b1fa2',
+      border: '#ce93d8',
+      success: '#4caf50',
+      warning: '#ff9800',
+      error: '#e91e63',
+      info: '#7b1fa2'
+    },
+    fonts: {
+      family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      size: 14
+    },
+    layout: {
+      sidebarWidth: 300,
+      borderRadius: 14,
+      spacing: 16
+    }
+  },
+  {
+    name: 'mood-focus',
+    displayName: 'Deep Focus 🔥',
+    colors: {
+      primary: '#d32f2f',
+      secondary: '#f57c00',
+      background: '#fff3e0',
+      surface: '#ffe0b2',
+      text: '#bf360c',
+      textSecondary: '#d84315',
+      border: '#ffab91',
+      success: '#388e3c',
+      warning: '#f57c00',
+      error: '#d32f2f',
+      info: '#d32f2f'
+    },
+    fonts: {
+      family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      size: 14
+    },
+    layout: {
+      sidebarWidth: 300,
+      borderRadius: 8,
+      spacing: 16
+    }
   }
 ];
 
@@ -144,7 +249,7 @@ export interface ThemeSettings {
 }
 
 const defaultSettings: ThemeSettings = {
-  currentTheme: 'light',
+  currentTheme: 'light', // Default to light theme
   fontSize: 14,
   sidebarWidth: 300,
   borderRadius: 6,
