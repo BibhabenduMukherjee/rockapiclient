@@ -19,7 +19,19 @@ export interface CodeGenConfig {
   activeEnvVars: Record<string, string>;
 }
 
-export type CodeGenType = 'curl' | 'fetch' | 'axios' | 'httpie';
+export type CodeGenType = 
+  // Command Line
+  | 'curl' | 'httpie'
+  // JavaScript/Web
+  | 'fetch' | 'axios' | 'react' | 'vue' | 'angular'
+  // Backend Languages
+  | 'python' | 'java' | 'csharp' | 'go' | 'php' | 'ruby' | 'rust'
+  // Mobile
+  | 'swift' | 'kotlin' | 'dart'
+  // Data Science
+  | 'r'
+  // DevOps
+  | 'powershell';
 
 /**
  * Generates code for the specified format
@@ -50,17 +62,55 @@ export const generateCode = (config: CodeGenConfig, type: CodeGenType): string =
   const constructedUrl = buildConstructedUrlForCodeGen(url, activeEnvVars);
 
   switch (type) {
+    // Command Line
     case 'curl':
       return generateCurlCode(method, constructedUrl, substitutedHeaders, substitutedBody);
-    
-    case 'fetch':
-      return generateFetchCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
-    
-    case 'axios':
-      return generateAxiosCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
-    
     case 'httpie':
       return generateHttpieCode(method, constructedUrl, substitutedHeaders, substitutedBody);
+    
+    // JavaScript/Web
+    case 'fetch':
+      return generateFetchCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'axios':
+      return generateAxiosCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'react':
+      return generateReactCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'vue':
+      return generateVueCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'angular':
+      return generateAngularCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    
+    // Backend Languages
+    case 'python':
+      return generatePythonCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'java':
+      return generateJavaCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'csharp':
+      return generateCSharpCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'go':
+      return generateGoCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'php':
+      return generatePhpCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'ruby':
+      return generateRubyCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'rust':
+      return generateRustCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    
+    // Mobile
+    case 'swift':
+      return generateSwiftCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'kotlin':
+      return generateKotlinCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    case 'dart':
+      return generateDartCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    
+    // Data Science
+    case 'r':
+      return generateRCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
+    
+    // DevOps
+    case 'powershell':
+      return generatePowerShellCode(method, constructedUrl, substitutedHeaders, substitutedBody, rawBodyType);
     
     default:
       return '';
@@ -162,7 +212,7 @@ const generateFetchCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : `'${body}'`},` 
+    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
     : '';
   
   return `fetch("${url}", {
@@ -183,7 +233,7 @@ const generateAxiosCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `data: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : `'${body}'`},` 
+    ? `data: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
     : '';
   
   return `axios.${method.toLowerCase()}("${url}", {
@@ -209,4 +259,629 @@ const generateHttpieCode = (
     httpieCmd += ` <<< '${body}'`;
   }
   return httpieCmd;
+};
+
+// ===== NEW LANGUAGE GENERATORS =====
+
+/**
+ * Generates React (hooks) code
+ */
+const generateReactCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `import { useState, useEffect } from 'react';
+
+const useApi = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("${url}", {
+        method: "${method}",
+        headers: ${JSON.stringify(headers, null, 8)},
+        ${bodyParam}
+      });
+      
+      if (!response.ok) {
+        throw new Error(\`HTTP \${response.status}\`);
+      }
+      
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  return { data, loading, error, refetch: fetchData };
+};
+
+export default useApi;`;
+};
+
+/**
+ * Generates Python (requests) code
+ */
+const generatePythonCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `data=${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `import requests
+import json
+
+url = "${url}"
+headers = ${JSON.stringify(headers, null, 4)}
+
+try:
+    response = requests.${method.toLowerCase()}(url, headers=headers${bodyParam ? `, ${bodyParam}` : ''})
+    response.raise_for_status()
+    
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.json()}")
+    
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")`;
+};
+
+/**
+ * Generates Java (Spring Boot) code
+ */
+const generateJavaCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `String requestBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'};` 
+    : '';
+  
+  return `import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+public class ApiController {
+    
+    private final RestTemplate restTemplate = new RestTemplate();
+    
+    public ResponseEntity<String> makeRequest() {
+        String url = "${url}";
+        
+        HttpHeaders headers = new HttpHeaders();
+        ${Object.entries(headers).map(([k, v]) => `headers.set("${k}", "${v}");`).join('\n        ')}
+        
+        ${bodyParam ? `${bodyParam}\n        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);` : 'HttpEntity<String> entity = new HttpEntity<>(headers);'}
+        
+        ResponseEntity<String> response = restTemplate.exchange(
+            url, 
+            HttpMethod.${method.toUpperCase()}, 
+            entity, 
+            String.class
+        );
+        
+        return response;
+    }
+}`;
+};
+
+/**
+ * Generates Go code
+ */
+const generateGoCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body := strings.NewReader(\`${body}\`)` 
+    : '';
+  
+  return `package main
+
+import (
+    "fmt"
+    "io/ioutil"
+    "net/http"
+    "strings"
+)
+
+func main() {
+    url := "${url}"
+    
+    ${bodyParam ? `${bodyParam}\n    req, err := http.NewRequest("${method.toUpperCase()}", url, body)` : `req, err := http.NewRequest("${method.toUpperCase()}", url, nil)`}
+    if err != nil {
+        panic(err)
+    }
+    
+    ${Object.entries(headers).map(([k, v]) => `req.Header.Set("${k}", "${v}")`).join('\n    ')}
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+    
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        panic(err)
+    }
+    
+    fmt.Printf("Status: %s\\n", resp.Status)
+    fmt.Printf("Response: %s\\n", string(body))
+}`;
+};
+
+/**
+ * Generates Swift (iOS) code
+ */
+const generateSwiftCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `request.httpBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '".data(using: .utf8)'}` 
+    : '';
+  
+  return `import Foundation
+
+func makeRequest() {
+    guard let url = URL(string: "${url}") else { return }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "${method.toUpperCase()}"
+    
+    ${Object.entries(headers).map(([k, v]) => `request.setValue("${v}", forHTTPHeaderField: "${k}")`).join('\n    ')}
+    
+    ${bodyParam ? `${bodyParam}` : ''}
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Error: \\(error)")
+            return
+        }
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("Status: \\(httpResponse.statusCode)")
+        }
+        
+        if let data = data {
+            let json = try? JSONSerialization.jsonObject(with: data)
+            print("Response: \\(json ?? "No data")")
+        }
+    }.resume()
+}`;
+};
+
+/**
+ * Generates Vue.js code
+ */
+const generateVueCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `<template>
+  <div>
+    <div v-if="loading">Loading...</div>
+    <div v-else-if="error">Error: {{ error }}</div>
+    <div v-else>{{ data }}</div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+
+const data = ref(null);
+const loading = ref(false);
+const error = ref(null);
+
+const fetchData = async () => {
+  loading.value = true;
+  try {
+    const response = await fetch("${url}", {
+      method: "${method}",
+      headers: ${JSON.stringify(headers, null, 6)},
+      ${bodyParam}
+    });
+    
+    if (!response.ok) {
+      throw new Error(\`HTTP \${response.status}\`);
+    }
+    
+    data.value = await response.json();
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchData();
+});
+</script>`;
+};
+
+/**
+ * Generates Angular code
+ */
+const generateAngularCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  constructor(private http: HttpClient) {}
+
+  fetchData(): Observable<any> {
+    const headers = new HttpHeaders(${JSON.stringify(headers, null, 4)});
+    
+    return this.http.${method.toLowerCase()}("${url}", {
+      headers,
+      ${bodyParam}
+    });
+  }
+}`;
+};
+
+/**
+ * Generates C# (.NET) code
+ */
+const generateCSharpCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `var content = new StringContent(${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'}, Encoding.UTF8, "application/json");` 
+    : '';
+  
+  return `using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+public class ApiClient
+{
+    private readonly HttpClient _httpClient;
+    
+    public ApiClient()
+    {
+        _httpClient = new HttpClient();
+    }
+    
+    public async Task<string> MakeRequest()
+    {
+        var url = "${url}";
+        
+        using var request = new HttpRequestMessage(HttpMethod.${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}, url);
+        
+        ${Object.entries(headers).map(([k, v]) => `request.Headers.Add("${k}", "${v}");`).join('\n        ')}
+        
+        ${bodyParam ? `${bodyParam}\n        request.Content = content;` : ''}
+        
+        try
+        {
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return responseContent;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            throw;
+        }
+    }
+}`;
+};
+
+/**
+ * Generates PHP code
+ */
+const generatePhpCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `'body' => ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `<?php
+
+$url = "${url}";
+$headers = ${JSON.stringify(headers, null, 4)};
+
+$options = [
+    'http' => [
+        'method' => '${method.toUpperCase()}',
+        'header' => implode("\\r\\n", array_map(function($k, $v) { return "$k: $v"; }, array_keys($headers), $headers)),
+        ${bodyParam ? `${bodyParam}` : ''}
+    ]
+];
+
+$context = stream_context_create($options);
+$result = file_get_contents($url, false, $context);
+
+if ($result === FALSE) {
+    echo "Error: " . error_get_last()['message'];
+} else {
+    echo "Response: " . $result;
+}
+?>`;
+};
+
+/**
+ * Generates Ruby code
+ */
+const generateRubyCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `require 'net/http'
+require 'json'
+require 'uri'
+
+url = URI("${url}")
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true if url.scheme == 'https'
+
+request = Net::HTTP::${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}.new(url)
+${Object.entries(headers).map(([k, v]) => `request['${k}'] = '${v}'`).join('\n')}
+
+${bodyParam ? `request.body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"}` : ''}
+
+begin
+  response = http.request(request)
+  puts "Status: #{response.code}"
+  puts "Response: #{response.body}"
+rescue => e
+  puts "Error: #{e.message}"
+end`;
+};
+
+/**
+ * Generates Rust code
+ */
+const generateRustCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `let body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '".to_string()'};` 
+    : '';
+  
+  return `use reqwest;
+use serde_json::Value;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = reqwest::Client::new();
+    let url = "${url}";
+    
+    ${bodyParam ? `${bodyParam}\n    let response = client.${method.toLowerCase()}(url).body(body)` : `let response = client.${method.toLowerCase()}(url)`}
+        ${Object.entries(headers).map(([k, v]) => `.header("${k}", "${v}")`).join('')}
+        .send()
+        .await?;
+    
+    let status = response.status();
+    let text = response.text().await?;
+    
+    println!("Status: {}", status);
+    println!("Response: {}", text);
+    
+    Ok(())
+}`;
+};
+
+/**
+ * Generates Kotlin (Android) code
+ */
+const generateKotlinCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `val requestBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'}.toRequestBody("application/json".toMediaType())` 
+    : '';
+  
+  return `import okhttp3.*
+import java.io.IOException
+
+class ApiClient {
+    private val client = OkHttpClient()
+    
+    fun makeRequest() {
+        val url = "${url}"
+        val requestBuilder = Request.Builder().url(url)
+        
+        ${Object.entries(headers).map(([k, v]) => `requestBuilder.addHeader("${k}", "${v}")`).join('\n        ')}
+        
+        ${bodyParam ? `${bodyParam}\n        requestBuilder.${method.toLowerCase()}(requestBody)` : `requestBuilder.${method.toLowerCase()}()`}
+        
+        val request = requestBuilder.build()
+        
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                println("Error: \${e.message}")
+            }
+            
+            override fun onResponse(call: Call, response: Response) {
+                println("Status: \${response.code}")
+                println("Response: \${response.body?.string()}")
+            }
+        })
+    }
+}`;
+};
+
+/**
+ * Generates Dart (Flutter) code
+ */
+const generateDartCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `'body': ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class ApiService {
+  static Future<void> makeRequest() async {
+    final url = Uri.parse("${url}");
+    
+    final headers = ${JSON.stringify(headers, null, 4)};
+    
+    try {
+      final response = await http.${method.toLowerCase()}(url, 
+        headers: headers,
+        ${bodyParam ? `${bodyParam}` : ''}
+      );
+      
+      print('Status: \${response.statusCode}');
+      print('Response: \${response.body}');
+      
+    } catch (e) {
+      print('Error: \$e');
+    }
+  }
+}`;
+};
+
+/**
+ * Generates R code
+ */
+const generateRCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    : '';
+  
+  return `library(httr)
+library(jsonlite)
+
+url <- "${url}"
+headers <- ${JSON.stringify(headers, null, 4)}
+
+tryCatch({
+  response <- ${method.toUpperCase()}(url, 
+    add_headers(.headers = headers),
+    ${bodyParam ? `${bodyParam}` : ''}
+  )
+  
+  print(paste("Status:", status_code(response)))
+  print(paste("Response:", content(response, "text")))
+  
+}, error = function(e) {
+  print(paste("Error:", e$message))
+})`;
+};
+
+/**
+ * Generates PowerShell code
+ */
+const generatePowerShellCode = (
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+  rawBodyType: string
+): string => {
+  const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
+    ? `-Body '${body}'` 
+    : '';
+  
+  return `$url = "${url}"
+$headers = @{
+${Object.entries(headers).map(([k, v]) => `    "${k}" = "${v}"`).join('\n')}
+}
+
+try {
+    $response = Invoke-RestMethod -Uri $url -Method ${method.toUpperCase()} -Headers $headers ${bodyParam ? `${bodyParam}` : ''}
+    Write-Host "Response: $response"
+} catch {
+    Write-Host "Error: $($_.Exception.Message)"
+}`;
 };

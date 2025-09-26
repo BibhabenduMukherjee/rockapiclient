@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Layout, Modal, message, Select, Typography } from 'antd';
-import { SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { SettingOutlined, ThunderboltOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useCollections } from './hooks/useCollections';
 import { useEnvironments, substituteTemplate } from './hooks/useEnvironments';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -15,6 +15,7 @@ import AppTour, { TourButton } from './components/AppTour';
 import { showRequestSuccess, showRequestError, showCollectionSaved } from './components/EnhancedNotifications';
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
+import EnhancedCodeGenerator from './components/EnhancedCodeGenerator';
 import { ApiRequest, HistoryItem } from './types';
 
 const { Header } = Layout;
@@ -118,9 +119,8 @@ function App() {
   // Environment management
   const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
   
-  // Code generation modal
-  const [isCodeGenModalVisible, setIsCodeGenModalVisible] = useState(false);
-  const [codeGenType, setCodeGenType] = useState<CodeGenType>('curl');
+  // Enhanced code generation modal
+  const [isEnhancedCodeGenVisible, setIsEnhancedCodeGenVisible] = useState(false);
   
   // New feature modals
   const [isCommandPaletteVisible, setIsCommandPaletteVisible] = useState(false);
@@ -304,31 +304,6 @@ function App() {
     disabled: isSending
   });
 
-  const handleGenerateCode = (): string => {
-    const codeGenConfig: CodeGenConfig = {
-      method: activeRequest.method,
-      url: activeRequest.url,
-      headers: Object.entries(activeRequest.headers || {}).map(([key, value]) => ({
-        key,
-        value,
-        enabled: true
-      })),
-      auth: {
-        type: 'none',
-        apiKey: { key: '', value: '', addTo: 'header' },
-        bearer: { token: '' },
-        basic: { username: '', password: '' },
-        jwt: { token: '' }
-      },
-      bodyType: activeRequest.body ? 'raw' : 'none',
-      rawBodyType: 'json',
-      rawBody: activeRequest.body || '',
-      urlEncoded: [],
-      activeEnvVars: envState.items.find(env => env.key === envState.activeKey)?.variables || {}
-    };
-    
-    return generateCode(codeGenConfig, codeGenType);
-  };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -367,6 +342,7 @@ function App() {
                 border: 'none', 
                 color: 'var(--theme-text)', 
                 cursor: 'pointer',
+                marginRight: '16px',
                 padding: '8px 12px',
                 borderRadius: '4px',
                 transition: 'all 0.3s ease'
@@ -375,6 +351,22 @@ function App() {
             >
               <SettingOutlined style={{ marginRight: '8px' }} />
               Theme
+            </button>
+            <button
+              onClick={() => setIsEnhancedCodeGenVisible(true)}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--theme-text)', 
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                transition: 'all 0.3s ease'
+              }}
+              title="Generate Code (15+ Languages)"
+            >
+              <BarChartOutlined style={{ marginRight: '8px' }} />
+              Code Gen
             </button>
           </div>
         </div>
@@ -426,41 +418,6 @@ function App() {
         </Layout>
       </Layout>
 
-      {/* Code Generation Modal */}
-      <Modal 
-        title="Generate Code" 
-        open={isCodeGenModalVisible} 
-        onCancel={() => setIsCodeGenModalVisible(false)} 
-        footer={null}
-        width={800}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <Text strong>Select Language:</Text>
-          <Select 
-            value={codeGenType} 
-            onChange={setCodeGenType} 
-            style={{ width: 200, marginLeft: 8 }}
-          >
-            <Option value="curl">cURL</Option>
-            <Option value="fetch">JavaScript (fetch)</Option>
-            <Option value="axios">JavaScript (axios)</Option>
-            <Option value="httpie">HTTPie</Option>
-          </Select>
-        </div>
-        <textarea
-          rows={15}
-          value={handleGenerateCode()} 
-          readOnly 
-          style={{ 
-            fontFamily: 'monospace', 
-            width: '100%', 
-            padding: '12px',
-            border: '1px solid #d9d9d9',
-            borderRadius: '4px',
-            resize: 'vertical'
-          }}
-        />
-      </Modal>
 
       {/* Command Palette */}
       <CommandPalette
@@ -494,6 +451,33 @@ function App() {
       <AppTour
         isOpen={isTourVisible}
         onClose={() => setIsTourVisible(false)}
+      />
+      
+      {/* Enhanced Code Generator Modal */}
+      <EnhancedCodeGenerator
+        visible={isEnhancedCodeGenVisible}
+        onClose={() => setIsEnhancedCodeGenVisible(false)}
+        config={{
+          method: activeRequest?.method || 'GET',
+          url: activeRequest?.url || '',
+          headers: Object.entries(activeRequest?.headers || {}).map(([key, value]) => ({
+            key,
+            value,
+            enabled: true
+          })),
+          auth: {
+            type: 'none',
+            apiKey: { key: '', value: '', addTo: 'header' },
+            bearer: { token: '' },
+            basic: { username: '', password: '' },
+            jwt: { token: '' }
+          },
+          bodyType: activeRequest?.bodyType || 'none',
+          rawBodyType: activeRequest?.rawBodyType || 'json',
+          rawBody: activeRequest?.body || '',
+          urlEncoded: activeRequest?.urlEncoded || [],
+          activeEnvVars: envState.items.find(env => env.key === envState.activeKey)?.variables || {}
+        }}
       />
       
       {/* Tour completion element (hidden) */}

@@ -193,7 +193,7 @@ export default function CommandPalette({
       footer={null}
       width={600}
       style={{ top: 100 }}
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ marginBottom: 16 }}>
         <Input
