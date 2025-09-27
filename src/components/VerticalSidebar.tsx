@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Button, List, Select, Typography, Space, Tag, Collapse, Input, Modal, Form, Dropdown, message } from 'antd';
 import { 
   FolderOutlined, 
@@ -15,6 +15,11 @@ import {
 import { useCollections } from '../hooks/useCollections';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { HistoryItem, ApiRequest } from '../types';
+
+interface BookmarkedRequest extends ApiRequest {
+  bookmarkedAt: number;
+  tags?: string[];
+}
 import HistorySearch from './HistorySearch';
 import BookmarksPanel from './BookmarksPanel';
 
@@ -31,7 +36,10 @@ interface VerticalSidebarProps {
   onHistorySearch: (filteredHistory: HistoryItem[]) => void;
   filteredHistory: HistoryItem[];
   onClearHistory: () => void;
-  bookmarks: any[];
+  bookmarks: BookmarkedRequest[];
+  removeBookmark: (request: ApiRequest) => void;
+  updateBookmarkTags: (request: ApiRequest, tags: string[]) => void;
+  clearAllBookmarks: () => void;
 }
 
 export default function VerticalSidebar({
@@ -42,8 +50,12 @@ export default function VerticalSidebar({
   onHistorySearch,
   filteredHistory,
   onClearHistory,
-  bookmarks
+  bookmarks,
+  removeBookmark,
+  updateBookmarkTags,
+  clearAllBookmarks
 }: VerticalSidebarProps) {
+  
   const [isAddCollectionModalVisible, setIsAddCollectionModalVisible] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [isEnvModalVisible, setIsEnvModalVisible] = useState(false);
@@ -518,7 +530,13 @@ export default function VerticalSidebar({
           )}
 
           {activeTab === 'bookmarks' && (
-            <BookmarksPanel onSelectRequest={onSelectRequest} />
+            <BookmarksPanel 
+              onSelectRequest={onSelectRequest}
+              bookmarks={bookmarks}
+              removeBookmark={removeBookmark}
+              updateBookmarkTags={updateBookmarkTags}
+              clearAllBookmarks={clearAllBookmarks}
+            />
           )}
 
           {activeTab === 'environments' && (

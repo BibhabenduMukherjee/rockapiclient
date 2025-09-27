@@ -8,6 +8,9 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTheme } from './hooks/useTheme';
 import { useBookmarks } from './hooks/useBookmarks';
 import { useFirstLaunch } from './hooks/useFirstLaunch';
+import { useAppState, useRequestManagement } from './hooks/useAppState';
+import { useModals } from './hooks/useModals';
+import { useFocusManagement } from './hooks/useFocusManagement';
 import VerticalSidebar from './components/VerticalSidebar';
 import RequestTabs from './components/RequestTabs';
 import RequestPanel from './components/RequestPanel';
@@ -28,163 +31,119 @@ const { Option } = Select;
 const { Text } = Typography;
 
 function App() {
-  // State for sidebar navigation
-  const [activeTab, setActiveTab] = useState('collections');
-  
-  // State for request management (Postman-like tabs)
-  const [requests, setRequests] = useState<ApiRequest[]>([
-    {
-      key: 'new-request-1',
-      title: 'New Request',
-      name: 'New Request',
-      method: 'GET',
-      url: '',
-      params: {},
-      headers: {},
-      body: ''
-    }
-  ]);
-  const [activeRequestKey, setActiveRequestKey] = useState('new-request-1');
-  const [activeContentTab, setActiveContentTab] = useState('params');
-  
-  // Response state
-  const [responseText, setResponseText] = useState<string>('');
-  const [responseMeta, setResponseMeta] = useState<{ status: number | null; durationMs: number; headers: Record<string, string>; size: number }>({ status: null, durationMs: 0, headers: {}, size: 0 });
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [filteredHistory, setFilteredHistory] = useState<HistoryItem[]>([]);
-  const [isSending, setIsSending] = useState<boolean>(false);
-  const [hasNewResponse, setHasNewResponse] = useState<boolean>(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // Use optimized state management hooks
+  const appState = useAppState();
+  const {
+    activeTab,
+    setActiveTab,
+    requests,
+    setRequests,
+    activeRequestKey,
+    setActiveRequestKey,
+    activeContentTab,
+    setActiveContentTab,
+    responseText,
+    setResponseText,
+    responseMeta,
+    setResponseMeta,
+    history,
+    setHistory,
+    filteredHistory,
+    setFilteredHistory,
+    isSending,
+    setIsSending,
+    hasNewResponse,
+    setHasNewResponse,
+    abortControllerRef,
+    responseTimeData,
+    setResponseTimeData
+  } = appState;
+
+  // Use optimized request management
+  const requestManagement = useRequestManagement(requests, setRequests, activeRequestKey, setActiveRequestKey);
+  const {
+    handleNewRequest,
+    handleCloseTab,
+    handleRequestChange,
+    handleRequestSelect,
+    handleDuplicateRequest
+  } = requestManagement;
+
+  // Use optimized modal management
+  const modals = useModals();
+  const {
+    isEnhancedCodeGenVisible,
+    setIsEnhancedCodeGenVisible,
+    isCodeGenModalVisible,
+    setIsCodeGenModalVisible,
+    codeGenType,
+    setCodeGenType,
+    isCommandPaletteVisible,
+    setIsCommandPaletteVisible,
+    isTemplatesModalVisible,
+    setIsTemplatesModalVisible,
+    isThemeSettingsVisible,
+    setIsThemeSettingsVisible,
+    isTourVisible,
+    setIsTourVisible,
+    showMoodSelector,
+    setShowMoodSelector
+  } = modals;
+
+  // Use optimized focus management
+  const focusManagement = useFocusManagement();
+  const {
+    urlInputRef,
+    paramsTextAreaRef,
+    handleFocusUrl,
+    handleFocusParams: handleFocusParamsBase,
+    handleFocusHeaders: handleFocusHeadersBase,
+    handleFocusBody: handleFocusBodyBase
+  } = focusManagement;
+
+  // Create focus handlers with proper parameters
+  const handleFocusParams = useCallback(() => {
+    handleFocusParamsBase(setActiveContentTab);
+  }, [handleFocusParamsBase, setActiveContentTab]);
+
+  const handleFocusHeaders = useCallback(() => {
+    handleFocusHeadersBase(setActiveContentTab);
+  }, [handleFocusHeadersBase, setActiveContentTab]);
+
+  const handleFocusBody = useCallback(() => {
+    handleFocusBodyBase(setActiveContentTab);
+  }, [handleFocusBodyBase, setActiveContentTab]);
 
   // Get current active request
   const activeRequest = requests.find(req => req.key === activeRequestKey) || requests[0];
-  
-  // Request management functions
-  const handleNewRequest = useCallback(() => {
-    const newRequest: ApiRequest = {
-      key: `new-request-${Date.now()}`,
-      title: 'New Request',
-      name: 'New Request',
-      method: 'GET',
-      url: '',
-      params: {},
-      headers: {},
-      body: ''
-    };
-    setRequests(prev => [...prev, newRequest]);
-    setActiveRequestKey(newRequest.key);
-  }, []);
 
-  const handleCloseTab = useCallback((key: string) => {
-    if (requests.length <= 1) return; // Don't close the last tab
-    
-    setRequests(prev => prev.filter(req => req.key !== key));
-    
-    // If we're closing the active tab, switch to another tab
-    if (activeRequestKey === key) {
-      const remainingRequests = requests.filter(req => req.key !== key);
-      setActiveRequestKey(remainingRequests[0].key);
-    }
-  }, [requests, activeRequestKey]);
-
-  const handleRequestChange = useCallback((updatedRequest: ApiRequest) => {
-    setRequests(prev => prev.map(req => 
-      req.key === updatedRequest.key ? updatedRequest : req
-    ));
-  }, []);
-
-  const handleRequestSelect = useCallback((request: ApiRequest) => {
-    // Check if request already exists in tabs by key first
-    const existingRequestByKey = requests.find(req => req.key === request.key);
-    if (existingRequestByKey) {
-      setActiveRequestKey(existingRequestByKey.key);
-      return;
-    }
-    
-    // Check if request already exists in tabs by method and URL
-    const existingRequest = requests.find(req => 
-      req.method === request.method && req.url === request.url
-    );
-    
-    if (existingRequest) {
-      setActiveRequestKey(existingRequest.key);
-    } else {
-      // Create new tab for this request
-      const newRequest = {
-        ...request,
-        key: request.key || `request-${Date.now()}`
-      };
-      setRequests(prev => [...prev, newRequest]);
-      setActiveRequestKey(newRequest.key);
-    }
-  }, [requests]);
 
   // The custom hook provides all data and functions for managing collections
   const { collections, loading, addCollection, addRequest, renameNode, deleteNode, updateRequest } = useCollections();
   
   // Environment management
   const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
-  
-
-  // Enhanced code generation modal
-  const [isEnhancedCodeGenVisible, setIsEnhancedCodeGenVisible] = useState(false);
 
   // Bookmarks management
-  const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks();
-  
-  // Response time data for charts
-  const [responseTimeData, setResponseTimeData] = useState<Array<{ timestamp: number; duration: number; status: number; url: string }>>([]);
-  
-  // Code generation modal
-  const [isCodeGenModalVisible, setIsCodeGenModalVisible] = useState(false);
-  const [codeGenType, setCodeGenType] = useState<CodeGenType>('curl');
-  
-  // New feature modals
-  const [isCommandPaletteVisible, setIsCommandPaletteVisible] = useState(false);
-  const [isTemplatesModalVisible, setIsTemplatesModalVisible] = useState(false);
-  const [isThemeSettingsVisible, setIsThemeSettingsVisible] = useState(false);
-  const [isTourVisible, setIsTourVisible] = useState(false);
-  
-  // Refs for focus management
-  const urlInputRef = useRef<any>(null);
-  const paramsTextAreaRef = useRef<any>(null);
+  const { bookmarks, addBookmark, removeBookmark, isBookmarked, updateBookmarkTags, clearAllBookmarks } = useBookmarks();
   
   // Theme and keyboard shortcuts
   const { settings: themeSettings, setTheme } = useTheme();
   
   // First launch and mood selection
   const { isFirstLaunch, isChecking, markAsLaunched } = useFirstLaunch();
-  const [showMoodSelector, setShowMoodSelector] = useState(false);
-  
-  // Focus handlers
-  const handleFocusUrl = useCallback(() => {
-    urlInputRef.current?.focus();
-  }, []);
-  
-  const handleFocusParams = useCallback(() => {
-    setActiveContentTab('params');
-    setTimeout(() => paramsTextAreaRef.current?.focus(), 100);
-  }, []);
-  
-  const handleFocusHeaders = useCallback(() => {
-    setActiveContentTab('headers');
-  }, []);
-  
-  const handleFocusBody = useCallback(() => {
-    setActiveContentTab('body');
-  }, []);
   
   const handleSwitchToHistory = useCallback(() => {
     setActiveTab('history');
-  }, []);
+  }, [setActiveTab]);
   
   const handleSwitchToCollections = useCallback(() => {
     setActiveTab('collections');
-  }, []);
+  }, [setActiveTab]);
   
   const handleSwitchToEnvironments = useCallback(() => {
     setActiveTab('environments');
-  }, []);
+  }, [setActiveTab]);
 
   // Handle content tab change with new response indicator
   const handleContentTabChange = useCallback((tab: string) => {
@@ -458,6 +417,7 @@ function App() {
         {/* Vertical Sidebar */}
         <div data-tour="sidebar">
           <VerticalSidebar
+            key={`sidebar-${bookmarks.length}`}
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onSelectRequest={handleRequestSelect}
@@ -466,6 +426,9 @@ function App() {
             filteredHistory={filteredHistory}
             onClearHistory={() => setHistory([])}
             bookmarks={bookmarks}
+            removeBookmark={removeBookmark}
+            updateBookmarkTags={updateBookmarkTags}
+            clearAllBookmarks={clearAllBookmarks}
           />
         </div>
         

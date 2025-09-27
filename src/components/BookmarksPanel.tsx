@@ -2,15 +2,29 @@ import React, { useState } from 'react';
 import { List, Button, Tag, Input, Modal, Popconfirm, Empty } from 'antd';
 import { StarFilled, StarOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { ApiRequest } from '../types';
-import { useBookmarks } from '../hooks/useBookmarks';
+
+interface BookmarkedRequest extends ApiRequest {
+  bookmarkedAt: number;
+  tags?: string[];
+}
 
 interface BookmarksPanelProps {
   onSelectRequest: (request: ApiRequest) => void;
   className?: string;
+  bookmarks: BookmarkedRequest[];
+  removeBookmark: (request: ApiRequest) => void;
+  updateBookmarkTags: (request: ApiRequest, tags: string[]) => void;
+  clearAllBookmarks: () => void;
 }
 
-export default function BookmarksPanel({ onSelectRequest, className }: BookmarksPanelProps) {
-  const { bookmarks, removeBookmark, updateBookmarkTags, clearAllBookmarks } = useBookmarks();
+export default function BookmarksPanel({ 
+  onSelectRequest, 
+  className, 
+  bookmarks, 
+  removeBookmark, 
+  updateBookmarkTags, 
+  clearAllBookmarks 
+}: BookmarksPanelProps) {
   const [searchText, setSearchText] = useState('');
   const [editingBookmark, setEditingBookmark] = useState<ApiRequest | null>(null);
   const [editingTags, setEditingTags] = useState<string>('');
