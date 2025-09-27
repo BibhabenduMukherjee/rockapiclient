@@ -84,7 +84,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
         icon={<ReloadOutlined />}
         onClick={() => {
           config.onRetry?.();
-          notification.destroy(key);
+          antdNotification.destroy(key);
         }}
       >
         Retry
@@ -101,7 +101,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
           size="small"
           onClick={() => {
             action.action();
-            notification.destroy(key);
+            antdNotification.destroy(key);
           }}
         >
           {action.label}
