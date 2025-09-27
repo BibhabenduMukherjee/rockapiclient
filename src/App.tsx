@@ -52,6 +52,8 @@ function App() {
     setFilteredHistory,
     isSending,
     setIsSending,
+    hasNewResponse,
+    setHasNewResponse,
     abortControllerRef,
     responseTimeData,
     setResponseTimeData
@@ -142,6 +144,15 @@ function App() {
   const handleSwitchToEnvironments = useCallback(() => {
     setActiveTab('environments');
   }, [setActiveTab]);
+
+  // Handle content tab change with new response indicator
+  const handleContentTabChange = useCallback((tab: string) => {
+    setActiveContentTab(tab);
+    // Clear new response indicator when user manually switches to Response tab
+    if (tab === 'response') {
+      setHasNewResponse(false);
+    }
+  }, []);
 
   // Handle mood selection
   const handleMoodSelect = useCallback((mood: string) => {
@@ -281,6 +292,10 @@ function App() {
       ]);
       
       showRequestSuccess(result.responseMeta.durationMs, result.responseMeta.status || 0);
+      
+      // Set new response indicator and switch to Response tab
+      setHasNewResponse(true);
+      setActiveContentTab('response');
     } catch (err: any) {
       console.error('Request failed:', err);
       const errorMessage = err?.message || 'Unknown error';
@@ -443,8 +458,9 @@ function App() {
               responseText={responseText}
               responseMeta={responseMeta}
               activeContentTab={activeContentTab}
-              onContentTabChange={setActiveContentTab}
+              onContentTabChange={handleContentTabChange}
               responseTimeData={responseTimeData}
+              hasNewResponse={hasNewResponse}
             />
           </div>
         </Layout>

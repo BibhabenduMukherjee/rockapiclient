@@ -26,6 +26,7 @@ interface RequestPanelProps {
   activeContentTab: string;
   onContentTabChange: (tab: string) => void;
   responseTimeData: Array<{ timestamp: number; duration: number; status: number; url: string }>;
+  hasNewResponse?: boolean;
 }
 
 export default function RequestPanel({
@@ -40,7 +41,8 @@ export default function RequestPanel({
   responseMeta,
   activeContentTab,
   onContentTabChange,
-  responseTimeData
+  responseTimeData,
+  hasNewResponse = false
 }: RequestPanelProps) {
   const urlInputRef = useRef<any>(null);
   const paramsTextAreaRef = useRef<any>(null);
@@ -242,7 +244,23 @@ export default function RequestPanel({
     },
     {
       key: 'response',
-      label: 'Response',
+      label: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>Response</span>
+          {hasNewResponse && (
+            <div
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#ff4d4f',
+                animation: 'pulse 1.5s infinite'
+              }}
+              title="New response available"
+            />
+          )}
+        </div>
+      ),
       children: (
         <div>
           {/* Response Status Bar */}
@@ -358,6 +376,7 @@ export default function RequestPanel({
   ];
 
   return (
+    <>
     <Content style={{ padding: '24px', margin: 0, background: '#F5F5F5', height: '100%', overflow: 'auto' }}>
       {/* Request Builder */}
       <Flex gap="small" align="center" style={{ marginBottom: '20px' }}>
@@ -414,8 +433,28 @@ export default function RequestPanel({
       <ResponseAnalytics responseTimeData={responseTimeData} />
 
     </Content>
+    <style>{pulseAnimation}</style>
+    </>
   );
 }
+
+// Add CSS animation for the pulse effect
+const pulseAnimation = `
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+`;
 
 // Helper function to get status code color
 function getStatusColor(status: number): string {

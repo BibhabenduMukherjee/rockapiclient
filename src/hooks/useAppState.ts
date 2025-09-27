@@ -29,6 +29,8 @@ export interface AppState {
   // Request state
   isSending: boolean;
   setIsSending: (sending: boolean) => void;
+  hasNewResponse: boolean;
+  setHasNewResponse: (hasNew: boolean) => void;
   abortControllerRef: React.MutableRefObject<AbortController | null>;
   
   // Response time data
@@ -71,6 +73,7 @@ export function useAppState(): AppState {
   
   // Request state
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [hasNewResponse, setHasNewResponse] = useState<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   
   // Response time data
@@ -95,6 +98,8 @@ export function useAppState(): AppState {
     setFilteredHistory,
     isSending,
     setIsSending,
+    hasNewResponse,
+    setHasNewResponse,
     abortControllerRef,
     responseTimeData,
     setResponseTimeData
