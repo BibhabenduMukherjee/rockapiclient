@@ -84,7 +84,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
         icon={<ReloadOutlined />}
         onClick={() => {
           config.onRetry?.();
-          antdNotification.destroy(key);
+          notification.destroy(key);
         }}
       >
         Retry
@@ -101,7 +101,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
           size="small"
           onClick={() => {
             action.action();
-            antdNotification.destroy(key);
+            notification.destroy(key);
           }}
         >
           {action.label}
@@ -213,7 +213,6 @@ export const showTestPassed = (testName: string, duration: number) => {
         label: 'View Tests',
         action: () => {
           // Navigate to tests section
-          console.log('Navigate to tests');
         },
         type: 'primary'
       }
@@ -232,7 +231,6 @@ export const showTestFailed = (testName: string, error: string) => {
         label: 'View Details',
         action: () => {
           // Show test details
-          console.log('Show test details');
         },
         type: 'primary'
       },
@@ -240,7 +238,6 @@ export const showTestFailed = (testName: string, error: string) => {
         label: 'Retry Test',
         action: () => {
           // Retry the test
-          console.log('Retry test');
         },
         type: 'default'
       }

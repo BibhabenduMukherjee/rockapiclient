@@ -135,7 +135,6 @@ export default function RequestPanel({
 
   const handleParamsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    console.log('Params changed:', newValue); // Debug log
     setParamsJson(newValue); // Update local state immediately for responsive UI
     
     // Only update the request if JSON is valid
@@ -148,13 +147,11 @@ export default function RequestPanel({
     } else {
       try {
         const params = JSON.parse(newValue);
-        console.log('Parsed params:', params); // Debug log
         onRequestChange({
           ...request,
           params
         });
       } catch (error) {
-        console.log('JSON parse error:', error); // Debug log
         // Don't update request state if JSON is invalid, but keep the text for editing
       }
     }
@@ -182,7 +179,6 @@ export default function RequestPanel({
     formData: FormDataItem[];
     urlEncoded: FormDataItem[];
   }) => {
-    console.log('Body changed:', config); // Debug log
     onRequestChange({
       ...request,
       body: config.rawBody,
@@ -194,7 +190,6 @@ export default function RequestPanel({
   };
 
   const handleAuthChange = (newAuth: AuthConfig) => {
-    console.log('Auth changed:', newAuth); // Debug log
     onRequestChange({
       ...request,
       auth: newAuth as any

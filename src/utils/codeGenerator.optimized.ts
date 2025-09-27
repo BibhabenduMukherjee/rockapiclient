@@ -200,7 +200,7 @@ function generateFetchCode(
   
   return `fetch('${url}', ${JSON.stringify(options, null, 2)})
   .then(response => response.json())
-  .then(data => console.log(data))
+  .then(data => data)
   .catch(error => console.error('Error:', error));`;
 }
 
@@ -225,7 +225,7 @@ function generateAxiosCode(
   }
   
   return `axios(${JSON.stringify(config, null, 2)})
-  .then(response => console.log(response.data))
+  .then(response => response.data)
   .catch(error => console.error('Error:', error));`;
 }
 

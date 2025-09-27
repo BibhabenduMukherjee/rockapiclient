@@ -145,13 +145,8 @@ export default function VerticalSidebar({
   };
 
   const handleDeleteCollection = (collectionKey: string, collectionName: string) => {
-    console.log('🔥 handleDeleteCollection called with:', { collectionKey, collectionName });
-    
     // Direct delete without modal for testing
-    console.log('🗑️ Direct collection delete:', { collectionKey, collectionName });
-    console.log('🗑️ Available collections:', collections);
     const collection = collections.find(c => c.key === collectionKey);
-    console.log('🗑️ Found collection:', collection);
     
     if (collection) {
       const nodeToDelete = {
@@ -159,7 +154,6 @@ export default function VerticalSidebar({
         title: collection.title,
         type: 'collection' as const
       };
-      console.log('🗑️ Calling deleteNode with:', nodeToDelete);
       deleteNode(nodeToDelete);
       message.success('Collection deleted successfully');
     } else {
@@ -203,15 +197,12 @@ export default function VerticalSidebar({
 
   const handleDeleteRequest = (requestKey: string, requestName: string, collectionKey: string) => {    
     // Direct delete without modal for testing
-    console.log('🗑️ Direct request delete:', { requestKey, requestName, collectionKey });
-    console.log('🗑️ Available collections:', collections);
     const nodeToDelete = {
       key: requestKey,
       title: requestName,
       type: 'request' as const,
       collectionKey: collectionKey
     };
-    console.log('🗑️ Calling deleteNode with:', nodeToDelete);
     deleteNode(nodeToDelete);
     message.success('Request deleted successfully');
   };
@@ -401,7 +392,6 @@ export default function VerticalSidebar({
                                 icon: <DeleteOutlined />,
                                 danger: true,
                                 onClick: () => {
-                                  console.log('🔥 Delete collection menu item clicked');
                                   handleDeleteCollection(collection.key, collection.title);
                                 }
                               }
@@ -484,7 +474,6 @@ export default function VerticalSidebar({
                                     icon: <DeleteOutlined />,
                                     danger: true,
                                     onClick: () => {
-                                      console.log('🔥 Delete request menu item clicked');
                                       handleDeleteRequest(request.key, request.title, collection.key);
                                     }
                                   }

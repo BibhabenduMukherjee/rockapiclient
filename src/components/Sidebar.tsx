@@ -20,7 +20,6 @@ export default function SidebarCollection({ collections, loading, onSelectReques
 
   const showModal = (type: string, node: any) => {
     setModalConfig({ type, node, reqMethod : reqMethod || 'GET' ,value: node?.title || '' });
-    console.log('showModal called with:',  node);
     
     setIsModalVisible(true);
   };
