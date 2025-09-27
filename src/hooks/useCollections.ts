@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { Collection, ApiRequest, TreeNode } from '../types';
 
@@ -6,25 +6,30 @@ import { Collection, ApiRequest, TreeNode } from '../types';
 export function useCollections() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // On initial mount, load collections from the backend.
   useEffect(() => {
     const loadData = async () => {
-      // @ts-ignore
-      if (window.electron) {
-        try {
+      try {
+        setError(null);
+        // @ts-ignore
+        if (window.electron) {
           // @ts-ignore
           const loadedCollections = await window.electron.loadCollections();
           setCollections(loadedCollections || []);
-        } catch (error) {
-          message.error('Failed to load collections.');
-          console.error(error);
-        } finally {
-          setLoading(false);
+        } else {
+          // If not in Electron, just finish loading with an empty array.
+          console.warn('Electron API not found. Running in browser mode.');
+          setCollections([]);
         }
-      } else {
-        // If not in Electron, just finish loading with an empty array.
-        console.warn('Electron API not found. Running in browser mode.');
+      } catch (error) {
+        const errorMessage = 'Failed to load collections.';
+        setError(errorMessage);
+        message.error(errorMessage);
+        console.error('Collections loading error:', error);
+        setCollections([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -41,21 +46,39 @@ export function useCollections() {
     }
   }, [collections, loading]);
 
-  const addCollection = (name: string) => {
-    const newCollection: Collection = { key: `coll-${Date.now()}`, title: name, requests: [] };
+  const addCollection = useCallback((name: string) => {
+    if (!name.trim()) {
+      message.error('Collection name cannot be empty.');
+      return;
+    }
+    
+    const newCollection: Collection = { 
+      key: `coll-${Date.now()}`, 
+      title: name.trim(), 
+      requests: [] 
+    };
     setCollections(current => [...current, newCollection]);
-    message.success(`Collection "${name}" created.`);
-  };
+    message.success(`Collection "${name.trim()}" created.`);
+  }, []);
 
-  const addRequest = (collectionKey: string, request: Omit<ApiRequest, 'key'>) => {
-    const newRequest: ApiRequest = { ...request, key: `req-${Date.now()}` };
+  const addRequest = useCallback((collectionKey: string, request: Omit<ApiRequest, 'key'>) => {
+    if (!request.title?.trim()) {
+      message.error('Request title cannot be empty.');
+      return;
+    }
+    
+    const newRequest: ApiRequest = { 
+      ...request, 
+      key: `req-${Date.now()}`,
+      title: request.title.trim()
+    };
     setCollections(current =>
       current.map(c =>
         c.key === collectionKey ? { ...c, requests: [...c.requests, newRequest] } : c
       )
     );
-    message.success(`Request "${request.title}" added.`);
-  };
+    message.success(`Request "${request.title.trim()}" added.`);
+  }, []);
 
   const renameNode = (node: TreeNode, newName: string) => {
     setCollections(current =>
