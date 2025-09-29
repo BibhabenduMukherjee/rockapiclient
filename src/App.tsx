@@ -11,6 +11,7 @@ import { useFirstLaunch } from './hooks/useFirstLaunch';
 import { useAppState, useRequestManagement } from './hooks/useAppState';
 import { useModals } from './hooks/useModals';
 import { useFocusManagement } from './hooks/useFocusManagement';
+import { usePreloader } from './hooks/usePreloader';
 import VerticalSidebar from './components/VerticalSidebar';
 import RequestTabs from './components/RequestTabs';
 import RequestPanel from './components/RequestPanel';
@@ -20,6 +21,7 @@ import ThemeSettings from './components/ThemeSettings';
 import AppTour, { TourButton } from './components/AppTour';
 import BookmarksPanel from './components/BookmarksPanel';
 import MoodSelector from './components/MoodSelector';
+import Preloader from './components/Preloader';
 import { showRequestSuccess, showRequestError, showCollectionSaved } from './components/EnhancedNotifications';
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
@@ -130,6 +132,11 @@ function App() {
   
   // First launch and mood selection
   const { isFirstLaunch, isChecking, markAsLaunched } = useFirstLaunch();
+  
+  // Preloader management
+  const preloaderState = usePreloader();
+  const isPreloaderVisible = preloaderState?.isLoading ?? true;
+  const preloaderMessage = preloaderState?.message ?? 'Loading Rock API Client...';
   
   const handleSwitchToHistory = useCallback(() => {
     setActiveTab('history');
@@ -309,7 +316,11 @@ function App() {
 
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <>
+      {/* Preloader */}
+      <Preloader visible={isPreloaderVisible} message={preloaderMessage} />
+      
+      <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ 
         color: 'var(--theme-text)', 
         fontSize: '20px', 
@@ -525,6 +536,7 @@ function App() {
       {/* Tour completion element (hidden) */}
       <div data-tour="tour-complete" style={{ display: 'none' }} />
     </Layout>
+    </>
   );
 }
 

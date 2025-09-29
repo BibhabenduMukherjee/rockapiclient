@@ -1,0 +1,252 @@
+/* Preloader Overlay */
+.preloader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.preloader-container {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+/* Rocket Animation */
+.rocket-container {
+  position: relative;
+  margin-bottom: 2rem;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rocket-icon {
+  font-size: 3rem;
+  color: #ffd700;
+  animation: rocketFloat 2s ease-in-out infinite;
+  z-index: 2;
+  position: relative;
+}
+
+.rocket-trail {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 30px;
+  background: linear-gradient(to bottom, #ff6b6b, transparent);
+  border-radius: 2px;
+  animation: trailFlicker 1.5s ease-in-out infinite;
+}
+
+/* Spinner Container */
+.spinner-container {
+  margin: 1.5rem 0;
+}
+
+.spinner-container .ant-spin {
+  color: #ffd700;
+}
+
+.spinner-container .ant-spin-dot-item {
+  background-color: #ffd700;
+}
+
+/* Loading Message */
+.loading-message h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.loading-message p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 300;
+}
+
+/* Progress Dots */
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ffd700;
+  border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rocketFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+}
+
+@keyframes trailFlicker {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scaleY(0.8);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  .preloader-overlay {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  }
+  
+  .rocket-icon {
+    color: #f39c12;
+  }
+  
+  .rocket-trail {
+    background: linear-gradient(to bottom, #e74c3c, transparent);
+  }
+  
+  .spinner-container .ant-spin {
+    color: #f39c12;
+  }
+  
+  .spinner-container .ant-spin-dot-item {
+    background-color: #f39c12;
+  }
+  
+  .dot {
+    background-color: #f39c12;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .preloader-container {
+    padding: 1rem;
+    max-width: 300px;
+  }
+  
+  .rocket-icon {
+    font-size: 2.5rem;
+  }
+  
+  .loading-message h3 {
+    font-size: 1.25rem;
+  }
+  
+  .loading-message p {
+    font-size: 0.9rem;
+  }
+}
+
+/* High Contrast Theme */
+.high-contrast .preloader-overlay {
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
+}
+
+.high-contrast .rocket-icon {
+  color: #ffff00;
+}
+
+.high-contrast .rocket-trail {
+  background: linear-gradient(to bottom, #ff0000, transparent);
+}
+
+.high-contrast .spinner-container .ant-spin {
+  color: #ffff00;
+}
+
+.high-contrast .spinner-container .ant-spin-dot-item {
+  background-color: #ffff00;
+}
+
+.high-contrast .dot {
+  background-color: #ffff00;
+}
+
+/* Blue Ocean Theme */
+.blue-ocean .preloader-overlay {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.blue-ocean .rocket-icon {
+  color: #00d4ff;
+}
+
+.blue-ocean .rocket-trail {
+  background: linear-gradient(to bottom, #00d4ff, transparent);
+}
+
+.blue-ocean .spinner-container .ant-spin {
+  color: #00d4ff;
+}
+
+.blue-ocean .spinner-container .ant-spin-dot-item {
+  background-color: #00d4ff;
+}
+
+.blue-ocean .dot {
+  background-color: #00d4ff;
+}
