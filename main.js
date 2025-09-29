@@ -2,11 +2,14 @@ const { app, BrowserWindow,ipcMain } = require('electron');
 const path = require('path');
 //const { placeholder } = require('./config/placeholder');
 const fs = require('fs');
+const ServerManager = require('./main/serverManager');
 
-const userDataPath = app.getPath('userData');
-const collectionsFilePath = path.join(userDataPath, 'collections.json');
-const historyFilePath = path.join(userDataPath, 'history.json');
-const envsFilePath = path.join(userDataPath, 'environments.json');
+// Initialize Server Manager
+let serverManager;
+let userDataPath;
+let collectionsFilePath;
+let historyFilePath;
+let envsFilePath;
 
 if (process.env.NODE_ENV === 'development') {
   try {   
@@ -31,6 +34,12 @@ const placeholder = {
 }
 
 function createWindow() {
+  // Initialize file paths after app is ready
+  userDataPath = app.getPath('userData');
+  collectionsFilePath = path.join(userDataPath, 'collections.json');
+  historyFilePath = path.join(userDataPath, 'history.json');
+  envsFilePath = path.join(userDataPath, 'environments.json');
+
   const mainWindow = new BrowserWindow({
     width: placeholder.window.width || 800,
     height: placeholder.window.height || 600,
@@ -47,7 +56,11 @@ function createWindow() {
   mainWindow.webContents.openDevTools(); // Open DevTools for debugging
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Initialize server manager first
+  serverManager = new ServerManager();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
