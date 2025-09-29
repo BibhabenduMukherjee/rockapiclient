@@ -9,7 +9,7 @@
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win",
     "dist:linux": "electron-builder --linux",
-    "dev": "webpack --mode development --watch & electron .",
+    "dev": "NODE_ENV=development webpack --mode development --watch & NODE_ENV=development electron .",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

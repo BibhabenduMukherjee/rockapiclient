@@ -9,13 +9,18 @@ interface PreloaderProps {
 }
 
 export default function Preloader({ visible, message = 'Loading Rock API Client...' }: PreloaderProps) {
-  if (!visible) return null;
-  
   // Safety check for message
   const displayMessage = message || 'Loading Rock API Client...';
 
   return (
-    <div className="preloader-overlay">
+    <div 
+      className="preloader-overlay" 
+      style={{ 
+        display: visible ? 'flex' : 'none',
+        opacity: visible ? 1 : 0,
+        visibility: visible ? 'visible' : 'hidden'
+      }}
+    >
       <div className="preloader-container">
         {/* Animated Rocket Icon */}
         <div className="rocket-container">

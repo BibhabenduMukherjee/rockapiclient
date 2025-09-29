@@ -350,7 +350,10 @@ function App() {
       {/* Preloader */}
       <Preloader visible={isPreloaderVisible} message={preloaderMessage} />
       
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ 
+        minHeight: '100vh',
+        display: isPreloaderVisible ? 'none' : 'block'
+      }}>
       <Header style={{ 
         color: 'var(--theme-text)', 
         fontSize: '20px', 

@@ -1,8 +1,13 @@
-const { app, BrowserWindow,ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 //const { placeholder } = require('./config/placeholder');
 const fs = require('fs');
-const ServerManager = require('./main/serverManager');
+
+// Safety check for Electron
+if (!app) {
+  console.error('Failed to load Electron app module');
+  process.exit(1);
+}
 
 // Initialize Server Manager
 let serverManager;
@@ -53,12 +58,22 @@ function createWindow() {
     },
   });
   mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
-  mainWindow.webContents.openDevTools(); // Open DevTools for debugging
+  
+  // Only open DevTools in development mode
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 app.whenReady().then(() => {
-  // Initialize server manager first
-  serverManager = new ServerManager();
+  // Initialize server manager first (only if express is available)
+  try {
+    const ServerManager = require('./main/serverManager');
+    serverManager = new ServerManager();
+  } catch (error) {
+    console.warn('ServerManager not available:', error.message);
+    // Continue without server manager functionality
+  }
   createWindow();
 });
 

@@ -7,12 +7,11 @@ interface PreloaderState {
 }
 
 export function usePreloader() {
-  const [preloaderState, setPreloaderState] = useState<PreloaderState>(() => ({
+  const [preloaderState, setPreloaderState] = useState<PreloaderState>({
     isLoading: true,
     message: 'Loading Rock API Client...',
     progress: 0
-  }));
-
+  });
 
   // Simulate loading steps
   useEffect(() => {
@@ -27,61 +26,56 @@ export function usePreloader() {
     let currentStep = 0;
     const interval = setInterval(() => {
       if (currentStep < loadingSteps.length) {
-        setPreloaderState(prev => ({
-          isLoading: prev?.isLoading ?? true,
-          message: loadingSteps[currentStep]?.message ?? 'Loading...',
-          progress: loadingSteps[currentStep]?.progress ?? 0
-        }));
+        setPreloaderState({
+          isLoading: true,
+          message: loadingSteps[currentStep]?.message || 'Loading...',
+          progress: loadingSteps[currentStep]?.progress || 0
+        });
         currentStep++;
       } else {
         // Complete loading
-        setPreloaderState(prev => ({
-          isLoading: prev?.isLoading ?? true,
+        setPreloaderState({
+          isLoading: true,
           message: 'Ready!',
           progress: 100
-        }));
+        });
         
         // Hide preloader after a short delay
         setTimeout(() => {
-          setPreloaderState(prev => ({
+          setPreloaderState({
             isLoading: false,
-            message: prev?.message ?? 'Loading Rock API Client...',
-            progress: prev?.progress ?? 0
-          }));
-        }, 500);
+            message: 'Loading Rock API Client...',
+            progress: 0
+          });
+        }, 800);
         
         clearInterval(interval);
       }
-    }, 800);
+    }, 600);
 
     return () => clearInterval(interval);
   }, []);
 
   const hidePreloader = () => {
-    setPreloaderState(prev => ({
+    setPreloaderState({
       isLoading: false,
-      message: prev?.message ?? 'Loading Rock API Client...',
-      progress: prev?.progress ?? 0
-    }));
+      message: 'Loading Rock API Client...',
+      progress: 0
+    });
   };
 
   const showPreloader = (message?: string) => {
-    setPreloaderState(prev => ({
+    setPreloaderState({
       isLoading: true,
       message: message || 'Loading...',
       progress: 0
-    }));
-  };
-
-  // Ensure we always return a valid state
-  const safeState = {
-    isLoading: preloaderState?.isLoading ?? true,
-    message: preloaderState?.message ?? 'Loading Rock API Client...',
-    progress: preloaderState?.progress ?? 0
+    });
   };
 
   return {
-    ...safeState,
+    isLoading: preloaderState.isLoading,
+    message: preloaderState.message,
+    progress: preloaderState.progress,
     hidePreloader,
     showPreloader
   };
