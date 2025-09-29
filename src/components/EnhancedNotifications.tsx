@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { notification, Button, Space, Typography, Progress } from 'antd';
+import { notification as antdNotification, Button, Space, Typography, Progress } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
@@ -84,7 +84,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
         icon={<ReloadOutlined />}
         onClick={() => {
           config.onRetry?.();
-          notification.destroy(key);
+          antdNotification.destroy(key);
         }}
       >
         Retry
@@ -101,7 +101,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
           size="small"
           onClick={() => {
             action.action();
-            notification.destroy(key);
+            antdNotification.destroy(key);
           }}
         >
           {action.label}
@@ -110,7 +110,7 @@ export const showEnhancedNotification = (config: NotificationConfig) => {
     });
   }
 
-  notification.open({
+  antdNotification.open({
     key,
     message: (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -157,18 +157,7 @@ export const showRequestSuccess = (duration: number, status: number) => {
     type: 'success',
     title: 'Request Successful',
     message: `Request completed in ${duration}ms with status ${status}`,
-    duration: 3,
-    actions: [
-      {
-        label: 'View Response',
-        action: () => {
-          // Scroll to response section
-          const responseElement = document.querySelector('[data-testid="response-section"]');
-          responseElement?.scrollIntoView({ behavior: 'smooth' });
-        },
-        type: 'primary'
-      }
-    ]
+    duration: 3
   });
 };
 

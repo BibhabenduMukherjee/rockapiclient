@@ -1,8 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // Use contextBridge to securely expose APIs to the renderer process (React).
-// This creates a `window.electron` object in your React app.
-contextBridge.exposeInMainWorld('electron', {
+// This creates a `window.electronAPI` object in your React app.
+contextBridge.exposeInMainWorld('electronAPI', {
   /**
    * Saves the collections data by invoking the 'save-collections' handler in main.js.
    * @param {object[]} collections - The array of collections to save.
@@ -28,4 +28,16 @@ contextBridge.exposeInMainWorld('electron', {
   // Environments
   saveEnvironments: (envState) => ipcRenderer.invoke('save-environments', envState),
   loadEnvironments: () => ipcRenderer.invoke('load-environments'),
+
+  // Mock Server APIs
+  createHttpServer: (config) => ipcRenderer.invoke('create-http-server', config),
+  createWebSocketServer: (config) => ipcRenderer.invoke('create-websocket-server', config),
+  stopServer: (port) => ipcRenderer.invoke('stop-server', port),
+  getServerStatus: (port) => ipcRenderer.invoke('get-server-status', port),
+  getAllServers: () => ipcRenderer.invoke('get-all-servers'),
+  getServerLogs: (port) => ipcRenderer.invoke('get-server-logs', port),
+  saveServerConfig: (config) => ipcRenderer.invoke('save-server-config', config),
+  loadServerConfigs: () => ipcRenderer.invoke('load-server-configs'),
+  deleteServerConfig: (port) => ipcRenderer.invoke('delete-server-config', port),
+  getSavedServerConfigs: () => ipcRenderer.invoke('get-saved-server-configs'),
 });

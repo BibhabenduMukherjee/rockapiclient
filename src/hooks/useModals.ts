@@ -19,6 +19,8 @@ export interface ModalState {
   setIsThemeSettingsVisible: (visible: boolean) => void;
   isTourVisible: boolean;
   setIsTourVisible: (visible: boolean) => void;
+  isMockServerManagerVisible: boolean;
+  setIsMockServerManagerVisible: (visible: boolean) => void;
   
   // Mood selector
   showMoodSelector: boolean;
@@ -36,6 +38,7 @@ export function useModals(): ModalState {
   const [isTemplatesModalVisible, setIsTemplatesModalVisible] = useState(false);
   const [isThemeSettingsVisible, setIsThemeSettingsVisible] = useState(false);
   const [isTourVisible, setIsTourVisible] = useState(false);
+  const [isMockServerManagerVisible, setIsMockServerManagerVisible] = useState(false);
   
   // Mood selector
   const [showMoodSelector, setShowMoodSelector] = useState(false);
@@ -55,6 +58,8 @@ export function useModals(): ModalState {
     setIsThemeSettingsVisible,
     isTourVisible,
     setIsTourVisible,
+    isMockServerManagerVisible,
+    setIsMockServerManagerVisible,
     showMoodSelector,
     setShowMoodSelector
   };

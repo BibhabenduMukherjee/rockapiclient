@@ -1,5 +1,21 @@
 import { substituteTemplate } from '../hooks/useEnvironments';
 
+// Helper function to safely parse JSON and format it
+const safeJsonStringify = (body: string, rawBodyType: string, quoteChar: string = '"'): string => {
+  if (rawBodyType === 'json') {
+    try {
+      return safeJsonStringify(body, rawBodyType);
+    } catch (e) {
+      // If JSON parsing fails, escape the string and return as string literal
+      const escapedBody = body.replace(new RegExp(quoteChar, 'g'), `\\${quoteChar}`);
+      return `${quoteChar}${escapedBody}${quoteChar}`;
+    }
+  } else {
+    const escapedBody = body.replace(new RegExp(quoteChar, 'g'), `\\${quoteChar}`);
+    return `${quoteChar}${escapedBody}${quoteChar}`;
+  }
+};
+
 // Interface for code generation configuration
 export interface CodeGenConfig {
   method: string;
@@ -212,7 +228,7 @@ const generateFetchCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body: ${safeJsonStringify(body, rawBodyType)},` 
     : '';
   
   return `fetch("${url}", {
@@ -233,7 +249,7 @@ const generateAxiosCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `data: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `data: ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `axios.${method.toLowerCase()}("${url}", {
@@ -274,7 +290,7 @@ const generateReactCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body: ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `import { useState, useEffect } from 'react';
@@ -327,7 +343,7 @@ const generatePythonCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `data=${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `data=${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `import requests
@@ -358,7 +374,7 @@ const generateJavaCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `String requestBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'};` 
+    ? `String requestBody = ${safeJsonStringify(body, rawBodyType)};` 
     : '';
   
   return `import org.springframework.web.client.RestTemplate;
@@ -452,7 +468,7 @@ const generateSwiftCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `request.httpBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '".data(using: .utf8)'}` 
+    ? `request.httpBody = ${safeJsonStringify(body, rawBodyType)}.data(using: .utf8)` 
     : '';
   
   return `import Foundation
@@ -496,7 +512,7 @@ const generateVueCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body: ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `<template>
@@ -552,7 +568,7 @@ const generateAngularCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body: ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `import { Injectable } from '@angular/core';
@@ -587,7 +603,7 @@ const generateCSharpCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `var content = new StringContent(${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'}, Encoding.UTF8, "application/json");` 
+    ? `var content = new StringContent(${safeJsonStringify(body, rawBodyType)}, Encoding.UTF8, "application/json");` 
     : '';
   
   return `using System;
@@ -642,7 +658,7 @@ const generatePhpCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `'body' => ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `'body' => ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `<?php
@@ -680,7 +696,7 @@ const generateRubyCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body: ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `require 'net/http'
@@ -694,7 +710,7 @@ http.use_ssl = true if url.scheme == 'https'
 request = Net::HTTP::${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}.new(url)
 ${Object.entries(headers).map(([k, v]) => `request['${k}'] = '${v}'`).join('\n')}
 
-${bodyParam ? `request.body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"}` : ''}
+${bodyParam ? `request.body = ${safeJsonStringify(body, rawBodyType, "'")}` : ''}
 
 begin
   response = http.request(request)
@@ -716,7 +732,7 @@ const generateRustCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `let body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '".to_string()'};` 
+    ? `let body = ${safeJsonStringify(body, rawBodyType)}.to_string();` 
     : '';
   
   return `use reqwest;
@@ -753,7 +769,7 @@ const generateKotlinCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `val requestBody = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : '"' + body + '"'}.toRequestBody("application/json".toMediaType())` 
+    ? `val requestBody = ${safeJsonStringify(body, rawBodyType)}.toRequestBody("application/json".toMediaType())` 
     : '';
   
   return `import okhttp3.*
@@ -797,7 +813,7 @@ const generateDartCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `'body': ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `'body': ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `import 'dart:convert';
@@ -836,7 +852,7 @@ const generateRCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body = ${rawBodyType === 'json' ? JSON.stringify(JSON.parse(body), null, 2) : "'" + body + "'"},` 
+    ? `body = ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `library(httr)

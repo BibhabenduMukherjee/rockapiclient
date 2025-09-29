@@ -14,9 +14,9 @@ export function useCollections() {
       try {
         setError(null);
         // @ts-ignore
-        if (window.electron) {
+        if (window.electronAPI) {
           // @ts-ignore
-          const loadedCollections = await window.electron.loadCollections();
+          const loadedCollections = await window.electronAPI.loadCollections();
           setCollections(loadedCollections || []);
         } else {
           // If not in Electron, just finish loading with an empty array.
@@ -40,9 +40,9 @@ export function useCollections() {
   useEffect(() => {
     // We don't want to save during the initial loading phase.
     // @ts-ignore
-    if (!loading && window.electron) {
+    if (!loading && window.electronAPI) {
       // @ts-ignore
-      window.electron.saveCollections(collections);
+      window.electronAPI.saveCollections(collections);
     }
   }, [collections, loading]);
 

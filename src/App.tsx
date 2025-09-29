@@ -26,6 +26,7 @@ import { showRequestSuccess, showRequestError, showCollectionSaved } from './com
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
 import EnhancedCodeGenerator from './components/EnhancedCodeGenerator';
+import MockServerManager from './components/MockServerManager';
 import { ApiRequest, HistoryItem } from './types';
 
 const { Header } = Layout;
@@ -54,6 +55,8 @@ function App() {
     setFilteredHistory,
     isSending,
     setIsSending,
+    hasNewResponse,
+    setHasNewResponse,
     abortControllerRef,
     responseTimeData,
     setResponseTimeData
@@ -86,6 +89,8 @@ function App() {
     setIsThemeSettingsVisible,
     isTourVisible,
     setIsTourVisible,
+    isMockServerManagerVisible,
+    setIsMockServerManagerVisible,
     showMoodSelector,
     setShowMoodSelector
   } = modals;
@@ -150,6 +155,15 @@ function App() {
     setActiveTab('environments');
   }, [setActiveTab]);
 
+  // Handle content tab change with new response indicator
+  const handleContentTabChange = useCallback((tab: string) => {
+    setActiveContentTab(tab);
+    // Clear new response indicator when user manually switches to Response tab
+    if (tab === 'response') {
+      setHasNewResponse(false);
+    }
+  }, []);
+
   // Handle mood selection
   const handleMoodSelect = useCallback((mood: string) => {
     setTheme(mood);
@@ -160,14 +174,26 @@ function App() {
   // Load history on mount
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.loadHistory) {
+    if (window.electronAPI?.loadHistory) {
       // @ts-ignore
-      window.electron.loadHistory().then((items: HistoryItem[]) => {
+      window.electronAPI.loadHistory().then((items: HistoryItem[]) => {
         setHistory(items || []);
         setFilteredHistory(items || []);
       }).catch(() => {});
     }
   }, []);
+
+  // Handle Mock Server Manager event
+  useEffect(() => {
+    const handleOpenMockServerManager = () => {
+      setIsMockServerManagerVisible(true);
+    };
+
+    window.addEventListener('open-mock-server-manager', handleOpenMockServerManager);
+    return () => {
+      window.removeEventListener('open-mock-server-manager', handleOpenMockServerManager);
+    };
+  }, [setIsMockServerManagerVisible]);
 
   // Show mood selector on first launch
   useEffect(() => {
@@ -213,9 +239,9 @@ function App() {
   // Persist history on change
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.saveHistory) {
+    if (window.electronAPI?.saveHistory) {
       // @ts-ignore
-      window.electron.saveHistory(history);
+      window.electronAPI.saveHistory(history);
     }
   }, [history]);
 
@@ -288,6 +314,10 @@ function App() {
       ]);
       
       showRequestSuccess(result.responseMeta.durationMs, result.responseMeta.status || 0);
+      
+      // Set new response indicator and switch to Response tab
+      setHasNewResponse(true);
+      setActiveContentTab('response');
     } catch (err: any) {
       console.error('Request failed:', err);
       const errorMessage = err?.message || 'Unknown error';
@@ -454,8 +484,9 @@ function App() {
               responseText={responseText}
               responseMeta={responseMeta}
               activeContentTab={activeContentTab}
-              onContentTabChange={setActiveContentTab}
+              onContentTabChange={handleContentTabChange}
               responseTimeData={responseTimeData}
+              hasNewResponse={hasNewResponse}
             />
           </div>
         </Layout>
@@ -533,6 +564,18 @@ function App() {
         }}
       />
       
+      {/* Mock Server Manager Modal */}
+      <Modal
+        title="Mock Server Manager"
+        open={isMockServerManagerVisible}
+        onCancel={() => setIsMockServerManagerVisible(false)}
+        width="90%"
+        style={{ top: 20 }}
+        footer={null}
+      >
+        <MockServerManager />
+      </Modal>
+
       {/* Tour completion element (hidden) */}
       <div data-tour="tour-complete" style={{ display: 'none' }} />
     </Layout>

@@ -44,7 +44,7 @@ export default function RequestTabs({
             whiteSpace: 'nowrap'
           }}
         >
-          {request.name}
+          {request.url ? `${request.method} ${request.url}` : request.name}
         </Text>
         <Button
           size="small"
