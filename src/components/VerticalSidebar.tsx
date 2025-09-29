@@ -10,11 +10,13 @@ import {
   DeleteOutlined,
   SearchOutlined,
   MoreOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  ThunderboltOutlined
 } from '@ant-design/icons';
 import { useCollections } from '../hooks/useCollections';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { HistoryItem, ApiRequest } from '../types';
+import CustomButton from './CustomButton';
 
 interface BookmarkedRequest extends ApiRequest {
   bookmarkedAt: number;
@@ -55,6 +57,40 @@ export default function VerticalSidebar({
   updateBookmarkTags,
   clearAllBookmarks
 }: VerticalSidebarProps) {
+  // Mock server state
+  const [runningServers, setRunningServers] = useState<any[]>([]);
+  const [savedServers, setSavedServers] = useState<any[]>([]);
+  
+  // Load servers on component mount
+  useEffect(() => {
+    const loadServers = async () => {
+      try {
+        if (window.electronAPI && window.electronAPI.getAllServers) {
+          const running = await window.electronAPI.getAllServers();
+          setRunningServers(running);
+        }
+        if (window.electronAPI && window.electronAPI.getSavedServerConfigs) {
+          const saved = await window.electronAPI.getSavedServerConfigs();
+          setSavedServers(Object.values(saved));
+        }
+      } catch (error) {
+        console.error('Error loading servers:', error);
+      }
+    };
+    
+    loadServers();
+    
+    // Listen for server changes
+    const handleServerChange = () => {
+      loadServers();
+    };
+    
+    window.addEventListener('server-changed', handleServerChange);
+    
+    return () => {
+      window.removeEventListener('server-changed', handleServerChange);
+    };
+  }, []);
   
   const [isAddCollectionModalVisible, setIsAddCollectionModalVisible] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
@@ -254,6 +290,12 @@ export default function VerticalSidebar({
       icon: <HistoryOutlined />,
       label: 'History',
       count: history.length
+    },
+    {
+      key: 'servers',
+      icon: <ThunderboltOutlined />,
+      label: 'Mock Servers',
+      count: savedServers.length
     }
   ];
 
@@ -336,11 +378,10 @@ export default function VerticalSidebar({
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text strong style={{ color: 'var(--theme-text)' }}>Collections</Text>
                 <Button 
-                  type="primary" 
+                 
                   size="small" 
                   icon={<PlusOutlined />}
                   onClick={() => setIsAddCollectionModalVisible(true)}
-                  style={{ padding: '4px 12px' }}
                 >
                   New
                 </Button>
@@ -500,15 +541,15 @@ export default function VerticalSidebar({
                         }}>
                           No requests in this collection
                           <br />
-                          <Button 
-                            type="link" 
+                          <CustomButton 
+                            variant="ghost" 
                             size="small" 
                             icon={<PlusOutlined />}
                             onClick={() => handleAddRequestToCollection(collection.key)}
-                            style={{ padding: '8px 12px', height: 'auto', marginTop: '8px' }}
+                            style={{ marginTop: '8px' }}
                           >
                             Add Request
-                          </Button>
+                          </CustomButton>
                         </div>
                       )}
                     </div>
@@ -533,11 +574,10 @@ export default function VerticalSidebar({
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text strong style={{ color: 'var(--theme-text)' }}>Environments</Text>
                 <Button 
-                  type="primary" 
+                  
                   size="small" 
                   icon={<PlusOutlined />}
                   onClick={() => setIsEnvModalVisible(true)}
-                  style={{ padding: '4px 12px' }}
                 >
                   New
                 </Button>
@@ -674,6 +714,41 @@ export default function VerticalSidebar({
                     </List.Item>
                   )}
                 />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'servers' && (
+            <div>
+              <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text strong style={{ color: 'var(--theme-white-text)' }}>Mock Servers</Text>
+                <Button 
+                  size="small" 
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    // This will be handled by the parent component
+                    window.dispatchEvent(new CustomEvent('open-mock-server-manager'));
+                  }}
+                >
+                  New Server
+                </Button>
+              </div>
+              
+              <div style={{ 
+                padding: '16px', 
+                textAlign: 'center',
+                color: 'var(--theme-text-secondary)',
+                border: '2px dashed var(--theme-border)',
+                borderRadius: '8px',
+                marginTop: '16px'
+              }}>
+                <ThunderboltOutlined style={{ fontSize: '24px', marginBottom: '8px' }} />
+                <div style={{ marginBottom: '8px' }}>
+                  <Text strong>Mock Server Manager</Text>
+                </div>
+                <Text style={{ fontSize: '12px' }}>
+                  Create and manage local HTTP and WebSocket servers for testing
+                </Text>
               </div>
             </div>
           )}

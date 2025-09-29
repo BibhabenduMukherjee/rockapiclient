@@ -52,7 +52,8 @@ export function useAppState(): AppState {
       url: '',
       params: {},
       headers: {},
-      body: ''
+      body: '',
+      protocol: 'http'
     }
   ]);
   const [activeRequestKey, setActiveRequestKey] = useState('new-request-1');

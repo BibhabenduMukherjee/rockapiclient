@@ -1,13 +1,15 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Layout, Input, Select, Button, Flex, Tabs, Space, Typography, Collapse } from 'antd';
-import { ThunderboltOutlined, DownOutlined } from '@ant-design/icons';
+import { ThunderboltOutlined, DownOutlined, LinkOutlined } from '@ant-design/icons';
 import HeadersTab, { HeaderItem } from './HeadersTab';
 import AuthorizationTab, { AuthConfig } from './AuthorizationTab';
 import BodyTab, { BodyType, RawBodyType, FormDataItem } from './BodyTab';
 import RequestDuplication from './RequestDuplication';
 import RequestDiff from './RequestDiff';
 import ResponseAnalytics from './ResponseAnalytics';
+import WebSocketTabs from './WebSocketTabs';
 import { ApiRequest, HistoryItem } from '../types';
+import CustomButton from './CustomButton';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -46,6 +48,99 @@ export default function RequestPanel({
 }: RequestPanelProps) {
   const urlInputRef = useRef<any>(null);
   const paramsTextAreaRef = useRef<any>(null);
+  
+  // WebSocket state
+  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [wsError, setWsError] = useState<string | null>(null);
+  const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
+  
+  const connect = async (url: string, headers?: Record<string, string>) => {
+    try {
+      setConnectionState('connecting');
+      setWsError(null);
+      
+      // Create WebSocket connection
+      const ws = new WebSocket(url);
+      setWsConnection(ws);
+      
+      ws.onopen = () => {
+        setConnectionState('connected');
+        setWsError(null);
+        console.log('WebSocket connected to:', url);
+      };
+      
+      ws.onmessage = (event) => {
+        const newMessage = {
+          id: Date.now().toString(),
+          type: 'received',
+          content: event.data,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMessage]);
+        console.log('WebSocket message received:', event.data);
+        console.log('Message object:', newMessage);
+      };
+      
+      ws.onclose = (event) => {
+        setConnectionState('disconnected');
+        setWsConnection(null);
+        console.log('WebSocket closed:', event.code, event.reason);
+      };
+      
+      ws.onerror = (error) => {
+        setConnectionState('error');
+        setWsError('WebSocket connection failed');
+        setWsConnection(null);
+        console.error('WebSocket error:', error);
+      };
+      
+    } catch (error: any) {
+      setConnectionState('error');
+      setWsError(error.message);
+      console.error('Failed to connect to WebSocket:', error);
+    }
+  };
+  
+  const disconnect = () => {
+    if (wsConnection) {
+      wsConnection.close();
+      setWsConnection(null);
+    }
+    setConnectionState('disconnected');
+  };
+  
+  const sendMessage = (message: string) => {
+    if (wsConnection && connectionState === 'connected') {
+      try {
+        wsConnection.send(message);
+        const newMessage = {
+          id: Date.now().toString(),
+          type: 'sent',
+          content: message,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMessage]);
+        console.log('WebSocket message sent:', message);
+      } catch (error: any) {
+        console.error('Failed to send WebSocket message:', error);
+        setWsError('Failed to send message');
+      }
+    }
+  };
+  
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
+  // Cleanup WebSocket connection on unmount
+  useEffect(() => {
+    return () => {
+      if (wsConnection) {
+        wsConnection.close();
+      }
+    };
+  }, [wsConnection]);
 
   // Local state for params textarea
   const [paramsJson, setParamsJson] = useState(JSON.stringify(request.params || {}, null, 2));
@@ -126,6 +221,20 @@ export default function RequestPanel({
     });
   };
 
+  const handleProtocolChange = (protocol: string) => {
+    onRequestChange({
+      ...request,
+      protocol: protocol as 'http' | 'websocket'
+    });
+    
+    // Reset to appropriate default tab when protocol changes
+    if (protocol === 'websocket') {
+      onContentTabChange('message');
+    } else {
+      onContentTabChange('params');
+    }
+  };
+
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onRequestChange({
       ...request,
@@ -196,7 +305,22 @@ export default function RequestPanel({
     });
   };
 
-  const contentTabItems = [
+  // WebSocket-specific tabs
+  const webSocketTabItems = WebSocketTabs({
+    messages,
+    onSendMessage: sendMessage,
+    onClearMessages: clearMessages,
+    connectionState,
+    onConnect: connect,
+    onDisconnect: disconnect,
+    url,
+    headers: request.headers || {},
+    onUrlChange: (newUrl) => onRequestChange({ ...request, url: newUrl }),
+    onHeadersChange: (newHeaders) => onRequestChange({ ...request, headers: newHeaders })
+  });
+
+  // HTTP-specific tabs
+  const httpTabItems = [
     {
       key: 'params',
       label: 'Query Params',
@@ -375,36 +499,62 @@ export default function RequestPanel({
     },
   ];
 
+  // Use appropriate tabs based on protocol
+  const contentTabItems = request.protocol === 'websocket' ? webSocketTabItems : httpTabItems;
+
   return (
     <>
-    <Content style={{ padding: '24px', margin: 0, background: '#F5F5F5', height: '100%', overflow: 'auto' }}>
+    <Content style={{ padding: '24px', margin: 0, background: 'var(--theme-background)', height: '100%', overflow: 'auto' }}>
       {/* Request Builder */}
       <Flex gap="small" align="center" style={{ marginBottom: '20px' }}>
-        <Select value={method} onChange={handleMethodChange} style={{ width: 120 }}>
-          <Option value="GET">GET</Option>
-          <Option value="POST">POST</Option>
-          <Option value="PUT">PUT</Option>
-          <Option value="DELETE">DELETE</Option>
-          <Option value="PATCH">PATCH</Option>
-          <Option value="HEAD">HEAD</Option>
-          <Option value="OPTIONS">OPTIONS</Option>
+        <Select 
+          value={request.protocol || 'http'} 
+          onChange={handleProtocolChange} 
+          style={{ width: 100 }}
+        >
+          <Option value="http">HTTP</Option>
+          <Option value="websocket">WebSocket</Option>
         </Select>
+        {request.protocol === 'http' && (
+          <Select value={method} onChange={handleMethodChange} style={{ width: 120 }}>
+            <Option value="GET">GET</Option>
+            <Option value="POST">POST</Option>
+            <Option value="PUT">PUT</Option>
+            <Option value="DELETE">DELETE</Option>
+            <Option value="PATCH">PATCH</Option>
+            <Option value="HEAD">HEAD</Option>
+            <Option value="OPTIONS">OPTIONS</Option>
+          </Select>
+        )}
         <Input 
           ref={urlInputRef}
-          placeholder="https://api.example.com/resource" 
+          placeholder={request.protocol === 'websocket' ? "ws://localhost:8080/websocket" : "https://api.example.com/resource"}
           value={url} 
           onChange={handleUrlChange}
           style={{ flex: 1 }}
+          prefix={request.protocol === 'websocket' ? <LinkOutlined /> : undefined}
         />
-        <Button 
-          type="primary" 
-          onClick={onSendRequest} 
-          loading={isSending} 
-          disabled={isSending || hasValidationError}
-          icon={<ThunderboltOutlined />}
-        >
-          Send
-        </Button>
+        {request.protocol === 'http' ? (
+          <CustomButton 
+            variant="primary" 
+            onClick={onSendRequest} 
+            loading={isSending} 
+            disabled={isSending || hasValidationError}
+            icon={<ThunderboltOutlined />}
+          >
+            Send
+          </CustomButton>
+        ) : (
+          <CustomButton 
+            variant="primary" 
+            onClick={() => connect(url, request.headers)} 
+            loading={connectionState === 'connecting'} 
+            disabled={connectionState === 'connected' || !url}
+            icon={<LinkOutlined />}
+          >
+            {connectionState === 'connected' ? 'Connected' : 'Connect'}
+          </CustomButton>
+        )}
         
         {/* Request Duplication Button */}
         <RequestDuplication 
@@ -422,6 +572,7 @@ export default function RequestPanel({
       {/* Content Tabs */}
       <div data-tour="request-tabs-content">
         <Tabs
+          key={`tabs-${request.protocol || 'http'}`}
           activeKey={activeContentTab}
           onChange={onContentTabChange}
           items={contentTabItems}

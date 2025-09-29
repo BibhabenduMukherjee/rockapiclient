@@ -5,6 +5,7 @@ export interface ApiRequest {
   name?: string; // For duplication functionality
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
   url: string;
+  protocol?: 'http' | 'websocket'; // Protocol type
   params?: Record<string, string>;
   headers?: Record<string, string>;
   body?: string;

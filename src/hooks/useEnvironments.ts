@@ -7,9 +7,9 @@ export function useEnvironments() {
 
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.loadEnvironments) {
+    if (window.electronAPI?.loadEnvironments) {
       // @ts-ignore
-      window.electron.loadEnvironments().then((s: EnvironmentsState) => {
+      window.electronAPI.loadEnvironments().then((s: EnvironmentsState) => {
         setState(s || { activeKey: undefined, items: [] });
         setLoading(false);
       }).catch(() => setLoading(false));
@@ -20,9 +20,9 @@ export function useEnvironments() {
 
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.saveEnvironments && !loading) {
+    if (window.electronAPI?.saveEnvironments && !loading) {
       // @ts-ignore
-      window.electron.saveEnvironments(state);
+      window.electronAPI.saveEnvironments(state);
     }
   }, [state, loading]);
 
