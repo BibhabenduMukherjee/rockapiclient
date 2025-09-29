@@ -24,6 +24,7 @@ import { showRequestSuccess, showRequestError, showCollectionSaved } from './com
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
 import EnhancedCodeGenerator from './components/EnhancedCodeGenerator';
+import MockServerManager from './components/MockServerManager';
 import { ApiRequest, HistoryItem } from './types';
 
 const { Header } = Layout;
@@ -86,6 +87,8 @@ function App() {
     setIsThemeSettingsVisible,
     isTourVisible,
     setIsTourVisible,
+    isMockServerManagerVisible,
+    setIsMockServerManagerVisible,
     showMoodSelector,
     setShowMoodSelector
   } = modals;
@@ -164,14 +167,26 @@ function App() {
   // Load history on mount
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.loadHistory) {
+    if (window.electronAPI?.loadHistory) {
       // @ts-ignore
-      window.electron.loadHistory().then((items: HistoryItem[]) => {
+      window.electronAPI.loadHistory().then((items: HistoryItem[]) => {
         setHistory(items || []);
         setFilteredHistory(items || []);
       }).catch(() => {});
     }
   }, []);
+
+  // Handle Mock Server Manager event
+  useEffect(() => {
+    const handleOpenMockServerManager = () => {
+      setIsMockServerManagerVisible(true);
+    };
+
+    window.addEventListener('open-mock-server-manager', handleOpenMockServerManager);
+    return () => {
+      window.removeEventListener('open-mock-server-manager', handleOpenMockServerManager);
+    };
+  }, [setIsMockServerManagerVisible]);
 
   // Show mood selector on first launch
   useEffect(() => {
@@ -217,9 +232,9 @@ function App() {
   // Persist history on change
   useEffect(() => {
     // @ts-ignore
-    if (window.electron?.saveHistory) {
+    if (window.electronAPI?.saveHistory) {
       // @ts-ignore
-      window.electron.saveHistory(history);
+      window.electronAPI.saveHistory(history);
     }
   }, [history]);
 
@@ -538,6 +553,18 @@ function App() {
         }}
       />
       
+      {/* Mock Server Manager Modal */}
+      <Modal
+        title="Mock Server Manager"
+        open={isMockServerManagerVisible}
+        onCancel={() => setIsMockServerManagerVisible(false)}
+        width="90%"
+        style={{ top: 20 }}
+        footer={null}
+      >
+        <MockServerManager />
+      </Modal>
+
       {/* Tour completion element (hidden) */}
       <div data-tour="tour-complete" style={{ display: 'none' }} />
     </Layout>

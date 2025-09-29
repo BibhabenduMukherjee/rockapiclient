@@ -8,8 +8,8 @@ import RequestDuplication from './RequestDuplication';
 import RequestDiff from './RequestDiff';
 import ResponseAnalytics from './ResponseAnalytics';
 import WebSocketTabs from './WebSocketTabs';
-import { useWebSocket } from '../hooks/useWebSocket';
 import { ApiRequest, HistoryItem } from '../types';
+import CustomButton from './CustomButton';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -49,16 +49,98 @@ export default function RequestPanel({
   const urlInputRef = useRef<any>(null);
   const paramsTextAreaRef = useRef<any>(null);
   
-  // WebSocket functionality
-  const {
-    connectionState,
-    messages,
-    error: wsError,
-    connect,
-    disconnect,
-    sendMessage,
-    clearMessages
-  } = useWebSocket();
+  // WebSocket state
+  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  const [messages, setMessages] = useState<any[]>([]);
+  const [wsError, setWsError] = useState<string | null>(null);
+  const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
+  
+  const connect = async (url: string, headers?: Record<string, string>) => {
+    try {
+      setConnectionState('connecting');
+      setWsError(null);
+      
+      // Create WebSocket connection
+      const ws = new WebSocket(url);
+      setWsConnection(ws);
+      
+      ws.onopen = () => {
+        setConnectionState('connected');
+        setWsError(null);
+        console.log('WebSocket connected to:', url);
+      };
+      
+      ws.onmessage = (event) => {
+        const newMessage = {
+          id: Date.now().toString(),
+          type: 'received',
+          content: event.data,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMessage]);
+        console.log('WebSocket message received:', event.data);
+        console.log('Message object:', newMessage);
+      };
+      
+      ws.onclose = (event) => {
+        setConnectionState('disconnected');
+        setWsConnection(null);
+        console.log('WebSocket closed:', event.code, event.reason);
+      };
+      
+      ws.onerror = (error) => {
+        setConnectionState('error');
+        setWsError('WebSocket connection failed');
+        setWsConnection(null);
+        console.error('WebSocket error:', error);
+      };
+      
+    } catch (error: any) {
+      setConnectionState('error');
+      setWsError(error.message);
+      console.error('Failed to connect to WebSocket:', error);
+    }
+  };
+  
+  const disconnect = () => {
+    if (wsConnection) {
+      wsConnection.close();
+      setWsConnection(null);
+    }
+    setConnectionState('disconnected');
+  };
+  
+  const sendMessage = (message: string) => {
+    if (wsConnection && connectionState === 'connected') {
+      try {
+        wsConnection.send(message);
+        const newMessage = {
+          id: Date.now().toString(),
+          type: 'sent',
+          content: message,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, newMessage]);
+        console.log('WebSocket message sent:', message);
+      } catch (error: any) {
+        console.error('Failed to send WebSocket message:', error);
+        setWsError('Failed to send message');
+      }
+    }
+  };
+  
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
+  // Cleanup WebSocket connection on unmount
+  useEffect(() => {
+    return () => {
+      if (wsConnection) {
+        wsConnection.close();
+      }
+    };
+  }, [wsConnection]);
 
   // Local state for params textarea
   const [paramsJson, setParamsJson] = useState(JSON.stringify(request.params || {}, null, 2));
@@ -453,25 +535,25 @@ export default function RequestPanel({
           prefix={request.protocol === 'websocket' ? <LinkOutlined /> : undefined}
         />
         {request.protocol === 'http' ? (
-          <Button 
-            type="primary" 
+          <CustomButton 
+            variant="primary" 
             onClick={onSendRequest} 
             loading={isSending} 
             disabled={isSending || hasValidationError}
             icon={<ThunderboltOutlined />}
           >
             Send
-          </Button>
+          </CustomButton>
         ) : (
-          <Button 
-            type="primary" 
+          <CustomButton 
+            variant="primary" 
             onClick={() => connect(url, request.headers)} 
             loading={connectionState === 'connecting'} 
             disabled={connectionState === 'connected' || !url}
             icon={<LinkOutlined />}
           >
             {connectionState === 'connected' ? 'Connected' : 'Connect'}
-          </Button>
+          </CustomButton>
         )}
         
         {/* Request Duplication Button */}
