@@ -11,6 +11,7 @@ if (!app) {
 
 // Initialize Server Manager
 let serverManager;
+let mainWindow;
 let userDataPath;
 let collectionsFilePath;
 let historyFilePath;
@@ -45,7 +46,7 @@ function createWindow() {
   historyFilePath = path.join(userDataPath, 'history.json');
   envsFilePath = path.join(userDataPath, 'environments.json');
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: placeholder.window.width || 800,
     height: placeholder.window.height || 600,
     title: placeholder.window.title || 'Rock API Client',
@@ -161,5 +162,113 @@ ipcMain.handle('load-environments', () => {
   } catch (error) {
     console.error('Failed to load environments:', error);
     return { activeKey: undefined, items: [] };
+  }
+});
+
+// File operations for export/import
+ipcMain.handle('save-file', async (event, content, filename) => {
+  try {
+    // Validate inputs
+    if (!content || typeof content !== 'string') {
+      return { success: false, error: 'Invalid content provided' };
+    }
+
+    if (!filename || typeof filename !== 'string') {
+      return { success: false, error: 'Invalid filename provided' };
+    }
+
+    // Check content size (max 100MB)
+    const contentSize = Buffer.byteLength(content, 'utf8');
+    if (contentSize > 100 * 1024 * 1024) {
+      return { success: false, error: 'Content too large (max 100MB)' };
+    }
+
+    const { dialog } = require('electron');
+    const result = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: filename,
+      filters: [
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['createDirectory', 'showOverwriteConfirmation']
+    });
+    
+    if (!result.canceled && result.filePath) {
+      // Ensure directory exists
+      const dir = path.dirname(result.filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      // Write file with proper error handling
+      fs.writeFileSync(result.filePath, content, 'utf-8');
+      
+      // Verify file was written correctly
+      const stats = fs.statSync(result.filePath);
+      if (stats.size === 0) {
+        return { success: false, error: 'File was not written correctly' };
+      }
+
+      return { 
+        success: true, 
+        path: result.filePath,
+        size: stats.size
+      };
+    }
+    return { success: false, canceled: true };
+  } catch (error) {
+    console.error('Failed to save file:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Unknown error occurred' 
+    };
+  }
+});
+
+ipcMain.handle('open-file', async () => {
+  try {
+    const { dialog } = require('electron');
+    const result = await dialog.showOpenDialog(mainWindow, {
+      filters: [
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['openFile', 'showHiddenFiles']
+    });
+    
+    if (!result.canceled && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0];
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return { success: false, error: 'File does not exist' };
+      }
+
+      // Check file size (max 50MB)
+      const stats = fs.statSync(filePath);
+      if (stats.size > 50 * 1024 * 1024) {
+        return { success: false, error: 'File too large (max 50MB)' };
+      }
+
+      if (stats.size === 0) {
+        return { success: false, error: 'File is empty' };
+      }
+
+      // Read file with encoding validation
+      const content = fs.readFileSync(filePath, 'utf-8');
+      
+      // Basic JSON validation
+      try {
+        JSON.parse(content);
+      } catch (jsonError) {
+        return { success: false, error: 'File is not valid JSON' };
+      }
+
+      return content;
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to open file:', error);
+    return null;
   }
 });

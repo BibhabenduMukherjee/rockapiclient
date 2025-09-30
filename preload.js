@@ -40,4 +40,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadServerConfigs: () => ipcRenderer.invoke('load-server-configs'),
   deleteServerConfig: (port) => ipcRenderer.invoke('delete-server-config', port),
   getSavedServerConfigs: () => ipcRenderer.invoke('get-saved-server-configs'),
+
+  // File operations for export/import
+  saveFile: (content, filename) => ipcRenderer.invoke('save-file', content, filename),
+  openFile: () => ipcRenderer.invoke('open-file'),
 });

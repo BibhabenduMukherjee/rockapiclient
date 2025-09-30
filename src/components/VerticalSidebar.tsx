@@ -11,7 +11,9 @@ import {
   SearchOutlined,
   MoreOutlined,
   FileTextOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
+  ExportOutlined,
+  ImportOutlined
 } from '@ant-design/icons';
 import { useCollections } from '../hooks/useCollections';
 import { useEnvironments } from '../hooks/useEnvironments';
@@ -116,8 +118,31 @@ export default function VerticalSidebar({
   // Request creation states
   const [newRequestMethod, setNewRequestMethod] = useState<'GET' | 'POST' | 'PUT' | 'DELETE'>('GET');
 
-  const { collections, loading, addCollection, addRequest, renameNode, deleteNode } = useCollections();
+  // Export/Import loading states
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const { collections, loading, addCollection, addRequest, renameNode, deleteNode, exportCollections, importCollections } = useCollections();
   const { state: envState, loading: envLoading, addEnvironment, removeEnvironment, setActiveEnvironment, updateVariables } = useEnvironments();
+
+  // Wrapper functions with loading states
+  const handleExportCollections = async () => {
+    setIsExporting(true);
+    try {
+      await exportCollections();
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportCollections = async () => {
+    setIsImporting(true);
+    try {
+      await importCollections();
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleAddCollection = () => {
     if (newCollectionName.trim()) {
@@ -377,14 +402,32 @@ export default function VerticalSidebar({
             <div>
               <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text strong style={{ color: 'var(--theme-text)' }}>Collections</Text>
-                <Button 
-                 
-                  size="small" 
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsAddCollectionModalVisible(true)}
-                >
-                  New
-                </Button>
+                <Space>
+                  <Button 
+                    size="small" 
+                    icon={<ImportOutlined />}
+                    onClick={handleImportCollections}
+                    loading={isImporting}
+                    disabled={isExporting}
+                    title="Import Collections"
+                  />
+                  <Button 
+                    size="small" 
+                    icon={<ExportOutlined />}
+                    onClick={handleExportCollections}
+                    loading={isExporting}
+                    disabled={isImporting}
+                    title="Export Collections"
+                  />
+                  <Button 
+                    size="small" 
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsAddCollectionModalVisible(true)}
+                    disabled={isExporting || isImporting}
+                  >
+                    New
+                  </Button>
+                </Space>
               </div>
               
               <Collapse 
