@@ -7,14 +7,27 @@ interface PreloaderState {
 }
 
 export function usePreloader() {
-  const [preloaderState, setPreloaderState] = useState<PreloaderState>({
-    isLoading: true,
+  // Check if preloader has been shown before using localStorage
+  const hasShownBefore = localStorage.getItem('rock-api-preloader-shown') === 'true';
+  
+  const [preloaderState, setPreloaderState] = useState<PreloaderState>(() => ({
+    isLoading: !hasShownBefore,
     message: 'Loading Rock API Client...',
     progress: 0
-  });
+  }));
 
-  // Simulate loading steps
+  // Simulate loading steps - only run once on initial mount if not shown before
   useEffect(() => {
+    // If already shown before, don't show preloader
+    if (hasShownBefore) {
+      setPreloaderState({
+        isLoading: false,
+        message: 'Loading Rock API Client...',
+        progress: 0
+      });
+      return;
+    }
+
     const loadingSteps = [
       { message: 'Initializing application...', progress: 20 },
       { message: 'Loading components...', progress: 40 },
@@ -47,6 +60,8 @@ export function usePreloader() {
             message: 'Loading Rock API Client...',
             progress: 0
           });
+          // Mark as shown in localStorage
+          localStorage.setItem('rock-api-preloader-shown', 'true');
         }, 800);
         
         clearInterval(interval);
@@ -54,7 +69,7 @@ export function usePreloader() {
     }, 600);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [hasShownBefore]);
 
   const hidePreloader = () => {
     setPreloaderState({
@@ -72,11 +87,21 @@ export function usePreloader() {
     });
   };
 
+  const resetPreloader = () => {
+    localStorage.removeItem('rock-api-preloader-shown');
+    setPreloaderState({
+      isLoading: true,
+      message: 'Loading Rock API Client...',
+      progress: 0
+    });
+  };
+
   return {
     isLoading: preloaderState.isLoading,
     message: preloaderState.message,
     progress: preloaderState.progress,
     hidePreloader,
-    showPreloader
+    showPreloader,
+    resetPreloader
   };
 }

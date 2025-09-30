@@ -310,7 +310,7 @@ const MockServerManager: React.FC = () => {
             <>
               <Tooltip title="View Logs">
                 <CustomButton
-                  variant="ghost"
+                  variant="primary"
                   size="small"
                   icon={<EyeOutlined />}
                   onClick={() => handleViewLogs(record.port)}
@@ -382,11 +382,18 @@ const MockServerManager: React.FC = () => {
 
       {/* Create Server Modal */}
       <Modal
-        title="Create Mock Server"
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ApiOutlined style={{ color: '#1890ff' }} />
+            <span>Create Mock Server</span>
+          </div>
+        }
         open={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
-        width={800}
+        width={900}
         footer={null}
+        destroyOnClose
+        style={{ top: 20 }}
       >
         <ServerCreationForm 
           form={form}
@@ -473,55 +480,69 @@ const ServerCreationForm: React.FC<{
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={handleSubmit}>
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            label="Server Name"
-            name="name"
-            rules={[{ required: true, message: 'Please enter server name' }]}
-          >
-            <Input placeholder="My Mock Server" />
-          </Form.Item>
-        </Col>
-        <Col span={6}>
-          <Form.Item
-            label="Port"
-            name="port"
-            rules={[
-              { required: true, message: 'Please enter port' },
-              { type: 'number', min: 1000, max: 65535, message: 'Port must be between 1000-65535' }
-            ]}
-          >
-            <InputNumber style={{ width: '100%' }} placeholder="3000" />
-          </Form.Item>
-        </Col>
-        <Col span={6}>
-          <Form.Item
-            label="Type"
-            name="type"
-            rules={[{ required: true, message: 'Please select server type' }]}
-          >
-            <Select onChange={setServerType}>
-              <Option value="http">
-                <ApiOutlined /> HTTP Server
-              </Option>
-              <Option value="websocket">
-                <ThunderboltOutlined /> WebSocket Server
-              </Option>
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
+    <div style={{ padding: '8px 0' }}>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Card size="small" style={{ marginBottom: '16px' }}>
+          <Title level={5} style={{ marginBottom: '16px', color: '#1890ff' }}>
+            Server Configuration
+          </Title>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Server Name"
+                name="name"
+                rules={[{ required: true, message: 'Please enter server name' }]}
+              >
+                <Input placeholder="My Mock Server" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label="Port"
+                name="port"
+                rules={[
+                  { required: true, message: 'Please enter port' },
+                  { type: 'number', min: 1000, max: 65535, message: 'Port must be between 1000-65535' }
+                ]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="3000" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label="Type"
+                name="type"
+                rules={[{ required: true, message: 'Please select server type' }]}
+              >
+                <Select onChange={setServerType} defaultValue="http">
+                  <Option value="http">
+                    <ApiOutlined /> HTTP Server
+                  </Option>
+                  <Option value="websocket">
+                    <ThunderboltOutlined /> WebSocket Server
+                  </Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
 
-      {serverType === 'http' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Title level={5} style={{ margin: 0 }}>API Routes</Title>
-            <CustomButton variant="ghost" onClick={addRoute} icon={<PlusOutlined />}>
-              Add Route
-            </CustomButton>
-          </div>
+        {serverType === 'http' && (
+          <Card size="small" style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
+                <ApiOutlined style={{ marginRight: '8px' }} />
+                API Routes
+              </Title>
+              <Button 
+                type="primary" 
+                size="small"
+                onClick={addRoute} 
+                icon={<PlusOutlined />}
+              >
+                Add Route
+              </Button>
+            </div>
           {routes.map((route, index) => (
             <Card key={route.id} size="small" style={{ marginBottom: '8px' }}>
               <Row gutter={8}>
@@ -553,7 +574,7 @@ const ServerCreationForm: React.FC<{
                     style={{ width: '100%' }}
                   />
                 </Col>
-                <Col span={7}>
+                <Col span={6}>
                   <TextArea
                     value={JSON.stringify(route.response, null, 2)}
                     onChange={(e) => {
@@ -569,55 +590,72 @@ const ServerCreationForm: React.FC<{
                     rows={2}
                   />
                 </Col>
-                <Col span={1}>
-                  <Upload
-                    accept=".json"
-                    showUploadList={false}
-                    beforeUpload={(file) => {
-                      const reader = new FileReader();
-                      reader.onload = (e) => {
-                        try {
-                          const content = e.target?.result as string;
-                          const parsed = JSON.parse(content);
-                          updateRoute(route.id, 'response', parsed);
-                          message.success('JSON file loaded successfully');
-                        } catch (error: any) {
-                          message.error('Invalid JSON file: ' + error.message);
-                        }
-                      };
-                      reader.readAsText(file);
-                      return false; // Prevent upload
-                    }}
-                  >
-                    <Button 
-                      size="small" 
-                      icon={<UploadOutlined />}
-                      title="Upload JSON file"
-                    />
-                  </Upload>
+                <Col span={2}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Upload
+                      accept=".json"
+                      showUploadList={false}
+                      beforeUpload={(file) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          try {
+                            const content = e.target?.result as string;
+                            const parsed = JSON.parse(content);
+                            updateRoute(route.id, 'response', parsed);
+                            message.success('JSON file loaded successfully');
+                          } catch (error: any) {
+                            message.error('Invalid JSON file: ' + error.message);
+                          }
+                        };
+                        reader.readAsText(file);
+                        return false; // Prevent upload
+                      }}
+                    >
+                      <Button 
+                        size="small" 
+                        icon={<UploadOutlined />}
+                        title="Upload JSON file"
+                        type="default"
+                        style={{ width: '100%' }}
+                      />
+                    </Upload>
+                  </div>
                 </Col>
-                <Col span={3}>
-                  <Button 
-                    danger 
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeRoute(route.id)}
-                  />
+                <Col span={2}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Button 
+                      size="small"
+                      danger 
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeRoute(route.id)}
+                      title="Delete route"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </Card>
+        )}
 
-      {serverType === 'websocket' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Title level={5} style={{ margin: 0 }}>Message Handlers</Title>
-            <CustomButton variant="ghost" onClick={addMessageHandler} icon={<PlusOutlined />}>
-              Add Handler
-            </CustomButton>
-          </div>
-          {messageHandlers.map((handler, index) => (
+        {serverType === 'websocket' && (
+          <Card size="small" style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <Title level={5} style={{ margin: 0, color: '#722ed1' }}>
+                <ThunderboltOutlined style={{ marginRight: '8px' }} />
+                Message Handlers
+              </Title>
+              <Button 
+                type="primary" 
+                size="small"
+                onClick={addMessageHandler} 
+                icon={<PlusOutlined />}
+              >
+                Add Handler
+              </Button>
+            </div>
+            {messageHandlers.map((handler, index) => (
             <Card key={handler.id} size="small" style={{ marginBottom: '8px' }}>
               <Row gutter={8}>
                 <Col span={6}>
@@ -644,29 +682,45 @@ const ServerCreationForm: React.FC<{
                   />
                 </Col>
                 <Col span={3}>
-                  <Button 
-                    danger 
-                    icon={<DeleteOutlined />}
-                    onClick={() => removeMessageHandler(handler.id)}
-                  />
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    <Button 
+                      size="small"
+                      danger 
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeMessageHandler(handler.id)}
+                      title="Delete handler"
+                      style={{ width: '100%' }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </Card>
+        )}
 
-      <div style={{ textAlign: 'right', marginTop: '24px' }}>
-        <Space>
-          <CustomButton variant="secondary" onClick={onCancel}>
-            Cancel
-          </CustomButton>
-          <CustomButton variant="primary" htmlType="submit">
-            Create Server
-          </CustomButton>
-        </Space>
-      </div>
-    </Form>
+        <div style={{ 
+          textAlign: 'right', 
+          marginTop: '24px', 
+          paddingTop: '16px', 
+          borderTop: '1px solid #f0f0f0' 
+        }}>
+          <Space size="middle">
+            <Button onClick={onCancel} size="large">
+              Cancel
+            </Button>
+            <CustomButton 
+              variant="primary" 
+              htmlType="submit" 
+              size="large"
+              style={{ minWidth: '120px' }}
+            >
+              Create Server
+            </CustomButton>
+          </Space>
+        </div>
+      </Form>
+    </div>
   );
 };
 
