@@ -12,7 +12,7 @@ export type RawBodyType = 'text' | 'json' | 'javascript' | 'html' | 'xml';
 
 export interface FormDataItem {
   key: string;
-  value: string;
+  value: string | File;
   type: 'text' | 'file';
   enabled: boolean;
 }
@@ -144,9 +144,27 @@ export default function BodyTab({
                 disabled={!item.enabled}
               />
             ) : (
-              <Button disabled style={{ flex: 2 }}>
-                Choose File
-              </Button>
+              <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="file"
+                  id={`file-${index}`}
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      updateFormData(index, 'value', file);
+                    }
+                  }}
+                  disabled={!item.enabled}
+                />
+                <Button 
+                  onClick={() => document.getElementById(`file-${index}`)?.click()}
+                  disabled={!item.enabled}
+                  style={{ flex: 1 }}
+                >
+                  {item.value instanceof File ? item.value.name : (item.value || 'Choose File')}
+                </Button>
+              </div>
             )}
             <Button
               type="text"

@@ -191,7 +191,7 @@ const buildRequestBody = (
   bodyType: string,
   rawBodyType: string,
   rawBody: string,
-  formData: Array<{key: string, value: string, enabled: boolean}>,
+  formData: Array<{key: string, value: string | File, enabled: boolean, type?: 'text' | 'file'}>,
   urlEncoded: Array<{key: string, value: string, enabled: boolean}>,
   parsedHeaders: Record<string, string>,
   activeEnvVars: Record<string, string>
@@ -214,7 +214,11 @@ const buildRequestBody = (
     const formDataObj = new FormData();
     formData.forEach(item => {
       if (item.enabled && item.key && item.value) {
-        formDataObj.append(item.key, item.value);
+        if (item.type === 'file' && item.value instanceof File) {
+          formDataObj.append(item.key, item.value);
+        } else {
+          formDataObj.append(item.key, item.value as string);
+        }
       }
     });
     // Don't set Content-Type for FormData, let browser set it with boundary

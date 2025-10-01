@@ -26,13 +26,14 @@ export default function RequestTabs({
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '120px' }}>
         <Tag 
           color={
+            request.protocol === 'websocket' ? 'purple' :
             request.method === 'GET' ? 'blue' : 
             request.method === 'POST' ? 'green' : 
             request.method === 'PUT' ? 'orange' : 
             request.method === 'DELETE' ? 'red' : 'default'
           }
         >
-          {request.method}
+          {request.protocol === 'websocket' ? 'WS' : request.method}
         </Tag>
         <Text 
           style={{ 
@@ -44,7 +45,7 @@ export default function RequestTabs({
             whiteSpace: 'nowrap'
           }}
         >
-          {request.url ? `${request.method} ${request.url}` : request.name}
+          {request.url ? `${request.protocol === 'websocket' ? 'WS' : request.method} ${request.url}` : request.name}
         </Text>
         <Button
           size="small"
