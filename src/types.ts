@@ -10,6 +10,7 @@ export interface ApiRequest {
   headers?: Record<string, string>;
   body?: string;
   collectionKey?: string; // For tracking which collection this request belongs to
+  tags?: string[]; // Tags for categorization
   // Body configuration fields
   bodyType?: 'none' | 'raw' | 'form-data' | 'url-encoded';
   rawBodyType?: 'json' | 'text' | 'xml' | 'html';
@@ -61,4 +62,11 @@ export interface EnvironmentItem {
 export interface EnvironmentsState {
   activeKey?: string;
   items: EnvironmentItem[];
+}
+
+export interface WebSocketMessage {
+  id: string;
+  type: 'sent' | 'received';
+  content: string;
+  timestamp: number;
 }
