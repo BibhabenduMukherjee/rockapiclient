@@ -79,7 +79,7 @@ describe('codeGenerator', () => {
       
       expect(result).toContain('method: "POST"');
       expect(result).toContain('body:');
-      expect(result).toContain('"test": "data"');
+      expect(result).toContain('"{\\"test\\": \\"data\\"}"');
     });
 
     it('should generate axios code for GET request', () => {

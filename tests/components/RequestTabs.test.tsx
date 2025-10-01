@@ -91,8 +91,8 @@ describe('RequestTabs', () => {
   it('should display request names', () => {
     render(<RequestTabs {...defaultProps} />);
     
-    expect(screen.getByText('Test Request 1')).toBeInTheDocument();
-    expect(screen.getByText('Test Request 2')).toBeInTheDocument();
+    expect(screen.getByText('GET https://api.example.com/test1')).toBeInTheDocument();
+    expect(screen.getByText('POST https://api.example.com/test2')).toBeInTheDocument();
   });
 
   it('should call onTabChange when tab is clicked', () => {
