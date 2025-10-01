@@ -534,17 +534,7 @@ export default function RequestPanel({
           style={{ flex: 1 }}
           prefix={request.protocol === 'websocket' ? <LinkOutlined /> : undefined}
         />
-        {request.protocol === 'http' ? (
-          <CustomButton 
-            variant="primary" 
-            onClick={onSendRequest} 
-            loading={isSending} 
-            disabled={isSending || hasValidationError}
-            icon={<ThunderboltOutlined />}
-          >
-            Send
-          </CustomButton>
-        ) : (
+        {request.protocol === 'websocket' ? (
           <CustomButton 
             variant="primary" 
             onClick={() => connect(url, request.headers)} 
@@ -553,6 +543,16 @@ export default function RequestPanel({
             icon={<LinkOutlined />}
           >
             {connectionState === 'connected' ? 'Connected' : 'Connect'}
+          </CustomButton>
+        ) : (
+          <CustomButton 
+            variant="primary" 
+            onClick={onSendRequest} 
+            loading={isSending} 
+            disabled={isSending || hasValidationError}
+            icon={<ThunderboltOutlined />}
+          >
+            Send
           </CustomButton>
         )}
         

@@ -237,6 +237,7 @@ export default function VerticalSidebar({
         name: newRequestName.trim(),
         method: newRequestMethod,
         url: '',
+        protocol: 'http' as const,
         params: {},
         headers: {},
         body: ''

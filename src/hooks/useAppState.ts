@@ -115,6 +115,7 @@ export function useRequestManagement(requests: ApiRequest[], setRequests: React.
       name: 'New Request',
       method: 'GET',
       url: '',
+      protocol: 'http',
       params: {},
       headers: {},
       body: ''
@@ -164,7 +165,8 @@ export function useRequestManagement(requests: ApiRequest[], setRequests: React.
       ...request,
       key: `request-${Date.now()}`,
       title: request.title || `${request.method} ${request.url}`,
-      name: request.name || request.title || `${request.method} ${request.url}`
+      name: request.name || request.title || `${request.method} ${request.url}`,
+      protocol: request.protocol || 'http'
     };
     
     setRequests(prev => [...prev, newRequest]);
