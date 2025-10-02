@@ -351,15 +351,17 @@ function App() {
       <Preloader visible={isPreloaderVisible} message={preloaderMessage} />
       
       <Layout style={{ 
-        minHeight: '100vh',
-        display: isPreloaderVisible ? 'none' : 'block'
+        height: '100vh',
+        display: isPreloaderVisible ? 'none' : 'flex',
+        flexDirection: 'column'
       }}>
       <Header style={{ 
         color: 'var(--theme-text)', 
         fontSize: '20px', 
         fontWeight: 'bold', 
         background: 'var(--theme-background)',
-        borderBottom: '1px solid var(--theme-border)'
+        borderBottom: '1px solid var(--theme-border)',
+        flexShrink: 0
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: 'var(--theme-text)' }}>Rock API Client</span>
@@ -442,9 +444,14 @@ function App() {
         </div>
       </Header>
       
-      <Layout>
+      <Layout style={{ 
+        flex: 1, 
+        display: 'flex', 
+        height: 'calc(100vh - 64px)',
+        background: 'var(--theme-background)'
+      }}>
         {/* Vertical Sidebar */}
-        <div data-tour="sidebar">
+        <div data-tour="sidebar" style={{ flexShrink: 0 }}>
           <VerticalSidebar
             key={`sidebar-${bookmarks.length}`}
             activeTab={activeTab}
@@ -462,9 +469,15 @@ function App() {
         </div>
         
         {/* Main Content Area */}
-        <Layout style={{ background: 'var(--theme-background)' }}>
+        <Layout style={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          background: 'var(--theme-background)',
+          height: '100%'
+        }}>
           {/* Request Tabs */}
-          <div data-tour="request-tabs">
+          <div data-tour="request-tabs" style={{ flexShrink: 0 }}>
             <RequestTabs
               requests={requests}
               activeRequestKey={activeRequestKey}
@@ -475,7 +488,7 @@ function App() {
           </div>
           
           {/* Request Panel */}
-          <div data-tour="request-builder">
+          <div data-tour="request-builder" style={{ flex: 1, overflow: 'hidden' }}>
             <RequestPanel
               request={activeRequest}
               onRequestChange={handleRequestChange}
