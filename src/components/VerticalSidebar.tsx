@@ -333,8 +333,10 @@ export default function VerticalSidebar({
         style={{ 
           background: 'var(--theme-surface)',
           borderRight: '1px solid var(--theme-border)',
-          height: '100vh',
-          overflow: 'hidden'
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Sidebar Navigation */}
@@ -397,7 +399,7 @@ export default function VerticalSidebar({
           flex: 1, 
           overflow: 'auto', 
           padding: '0 8px 8px 8px',
-          height: 'calc(100vh - 140px)'
+          height: '100%'
         }}>
           {activeTab === 'collections' && (
             <div>
