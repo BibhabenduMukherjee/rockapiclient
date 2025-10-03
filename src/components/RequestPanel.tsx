@@ -7,6 +7,7 @@ import BodyTab, { BodyType, RawBodyType, FormDataItem } from './BodyTab';
 import RequestDuplication from './RequestDuplication';
 import RequestDiff from './RequestDiff';
 import ResponseAnalytics from './ResponseAnalytics';
+import DataTransformation from './DataTransformation';
 import WebSocketTabs from './WebSocketTabs';
 import { ApiRequest, HistoryItem } from '../types';
 import CustomButton from './CustomButton';
@@ -456,6 +457,19 @@ export default function RequestPanel({
             </div>
           )}
           
+          {/* Data Transformation */}
+          {responseText && (
+            <div style={{ marginBottom: 12 }}>
+              <DataTransformation 
+                responseData={responseText}
+                onTransformedData={(data) => {
+                  // You can handle the transformed data here if needed
+                  console.log('Transformed data:', data);
+                }}
+              />
+            </div>
+          )}
+
           {/* Response Body Dropdown */}
           {responseText && (
             <div>

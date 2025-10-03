@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Row, Col, Card, Typography, Button } from 'antd';
-import { SmileOutlined, HeartOutlined, BulbOutlined, FireOutlined } from '@ant-design/icons';
+import { SmileOutlined, HeartOutlined, BulbOutlined, FireOutlined, CloseOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -12,12 +12,12 @@ interface MoodSelectorProps {
 
 const moods = [
   {
-    id: 'mood-happy',
-    name: 'Sunshine',
-    emoji: '☀️',
+    id: 'mood-ocean',
+    name: 'Ocean Breeze',
+    emoji: '🌊',
     icon: <SmileOutlined style={{ fontSize: '24px' }} />,
-    description: 'Bright and energetic',
-    colors: ['#ff6b35', '#f7931e', '#fff8e1']
+    description: 'Cool and refreshing',
+    colors: ['#0077be', '#00a8cc', '#f0f9ff']
   },
   {
     id: 'mood-calm',
@@ -28,20 +28,20 @@ const moods = [
     colors: ['#4a6741', '#6b8e6b', '#f1f8e9']
   },
   {
-    id: 'mood-creative',
-    name: 'Purple Dreams',
+    id: 'mood-lavender',
+    name: 'Lavender Fields',
     emoji: '💜',
     icon: <BulbOutlined style={{ fontSize: '24px' }} />,
-    description: 'Inspiring and creative',
-    colors: ['#7b1fa2', '#9c27b0', '#fce4ec']
+    description: 'Elegant and sophisticated',
+    colors: ['#8b5cf6', '#a855f7', '#faf5ff']
   },
   {
-    id: 'mood-focus',
-    name: 'Deep Focus',
-    emoji: '🔥',
+    id: 'mood-sunset',
+    name: 'Sunset Glow',
+    emoji: '🌅',
     icon: <FireOutlined style={{ fontSize: '24px' }} />,
-    description: 'Intense and productive',
-    colors: ['#d32f2f', '#f57c00', '#fff3e0']
+    description: 'Warm and inspiring',
+    colors: ['#f59e0b', '#ea580c', '#fffbeb']
   }
 ];
 
@@ -65,11 +65,25 @@ export default function MoodSelector({ visible, onSelectMood, onClose }: MoodSel
       }
       open={visible}
       onCancel={onClose}
-      footer={null}
+      footer={
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <Button 
+            icon={<CloseOutlined />}
+            onClick={onClose}
+            size="large"
+            style={{ 
+              minWidth: '120px',
+              borderRadius: '8px'
+            }}
+          >
+            Maybe Later
+          </Button>
+        </div>
+      }
       width={600}
       centered
-      closable={false}
-      maskClosable={false}
+      closable={true}
+      maskClosable={true}
     >
       <div style={{ padding: '20px 0' }}>
         <Row gutter={[16, 16]}>

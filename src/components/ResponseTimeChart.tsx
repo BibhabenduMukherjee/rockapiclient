@@ -25,14 +25,14 @@ export default function ResponseTimeChart({ data, className }: ResponseTimeChart
 
   // Simple chart using CSS
   const maxTime = Math.max(maxDuration, 1000); // Minimum scale of 1 second
-  const chartHeight = 100;
+  const chartHeight = 60;
 
   return (
     <Card 
       title="Response Time Analytics" 
       size="small" 
       className={className}
-      style={{ marginBottom: 16 }}
+      style={{ marginBottom: 8 }}
     >
       <Row gutter={16}>
         <Col span={6}>

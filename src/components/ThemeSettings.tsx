@@ -71,13 +71,16 @@ export default function ThemeSettings({ visible, onClose }: ThemeSettingsProps) 
                 {themes.map(theme => (
                   <Option key={theme.name} value={theme.name}>
                     <Space>
-                      <div
+                      <span
+                        className="theme-preview-color"
                         style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: 2,
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '2px',
                           backgroundColor: theme.colors.primary,
-                          border: `1px solid ${theme.colors.border}`
+                          border: `1px solid ${theme.colors.border}`,
+                          flexShrink: 0,
+                          display: 'inline-block'
                         }}
                       />
                       {theme.displayName}

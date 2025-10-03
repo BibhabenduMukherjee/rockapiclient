@@ -6,10 +6,11 @@ const path = require('path');
 const fs = require('fs').promises;
 
 class ServerManager {
-  constructor() {
+  constructor(configFilePath) {
     this.servers = new Map(); // port -> server instance
     this.configs = new Map(); // port -> server config
     this.logs = new Map(); // port -> logs array
+    this.configFilePath = configFilePath || path.join(__dirname, '../server-configs.json'); // fallback for development
     this.setupIPC();
     // Load configurations asynchronously
     this.loadConfigurations().then(configs => {
@@ -388,20 +389,18 @@ class ServerManager {
   }
 
   async saveServerConfig(config) {
-    const configsPath = path.join(__dirname, '../server-configs.json');
-    const configs = JSON.parse(await fs.readFile(configsPath, 'utf8').catch(() => '{}'));
+    const configs = JSON.parse(await fs.readFile(this.configFilePath, 'utf8').catch(() => '{}'));
     configs[config.port] = {
       ...config,
       savedAt: new Date().toISOString()
     };
-    await fs.writeFile(configsPath, JSON.stringify(configs, null, 2));
+    await fs.writeFile(this.configFilePath, JSON.stringify(configs, null, 2));
     return { success: true };
   }
 
   async loadConfigurations() {
-    const configsPath = path.join(__dirname, '../server-configs.json');
     try {
-      const configs = JSON.parse(await fs.readFile(configsPath, 'utf8'));
+      const configs = JSON.parse(await fs.readFile(this.configFilePath, 'utf8'));
       return configs;
     } catch (error) {
       return {};
@@ -409,11 +408,10 @@ class ServerManager {
   }
 
   async deleteServerConfig(port) {
-    const configsPath = path.join(__dirname, '../server-configs.json');
     try {
-      const configs = JSON.parse(await fs.readFile(configsPath, 'utf8').catch(() => '{}'));
+      const configs = JSON.parse(await fs.readFile(this.configFilePath, 'utf8').catch(() => '{}'));
       delete configs[port];
-      await fs.writeFile(configsPath, JSON.stringify(configs, null, 2));
+      await fs.writeFile(this.configFilePath, JSON.stringify(configs, null, 2));
       console.log(`🗑️ Deleted server configuration for port ${port}`);
       return { success: true };
     } catch (error) {

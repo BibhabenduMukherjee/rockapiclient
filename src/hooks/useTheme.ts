@@ -58,17 +58,17 @@ export const defaultThemes: Theme[] = [
     name: 'dark',
     displayName: 'Dark',
     colors: {
-      primary: '#177ddc',
-      secondary: '#642ab5',
-      background: '#141414',
-      surface: '#1f1f1f',
+      primary: '#1890ff',
+      secondary: '#722ed1',
+      background: '#1a1a1a',
+      surface: '#262626',
       text: '#ffffff',
-      textSecondary: '#a6a6a6',
+      textSecondary: '#bfbfbf',
       border: '#434343',
-      success: '#49aa19',
-      warning: '#d89614',
-      error: '#dc4446',
-      info: '#177ddc'
+      success: '#52c41a',
+      warning: '#faad14',
+      error: '#ff4d4f',
+      info: '#1890ff'
     },
     fonts: {
       family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -134,20 +134,20 @@ export const defaultThemes: Theme[] = [
   },
   // Mood-based themes
   {
-    name: 'mood-happy',
-    displayName: 'Sunshine ☀️',
+    name: 'mood-ocean',
+    displayName: 'Ocean Breeze 🌊',
     colors: {
-      primary: '#ff6b35',
-      secondary: '#f7931e',
-      background: '#fff8e1',
-      surface: '#ffecb3',
-      text: '#e65100',
-      textSecondary: '#ff8f00',
-      border: '#ffcc02',
-      success: '#4caf50',
-      warning: '#ff9800',
-      error: '#f44336',
-      info: '#ff6b35'
+      primary: '#0077be',
+      secondary: '#00a8cc',
+      background: '#f0f9ff',
+      surface: '#e0f2fe',
+      text: '#0c4a6e',
+      textSecondary: '#0369a1',
+      border: '#7dd3fc',
+      success: '#059669',
+      warning: '#d97706',
+      error: '#dc2626',
+      info: '#0077be'
     },
     fonts: {
       family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -186,20 +186,20 @@ export const defaultThemes: Theme[] = [
     }
   },
   {
-    name: 'mood-creative',
-    displayName: 'Purple Dreams 💜',
+    name: 'mood-lavender',
+    displayName: 'Lavender Fields 💜',
     colors: {
-      primary: '#7b1fa2',
-      secondary: '#9c27b0',
-      background: '#fce4ec',
-      surface: '#f8bbd9',
-      text: '#4a148c',
-      textSecondary: '#7b1fa2',
-      border: '#ce93d8',
-      success: '#4caf50',
-      warning: '#ff9800',
-      error: '#e91e63',
-      info: '#7b1fa2'
+      primary: '#8b5cf6',
+      secondary: '#a855f7',
+      background: '#faf5ff',
+      surface: '#f3e8ff',
+      text: '#581c87',
+      textSecondary: '#7c3aed',
+      border: '#c4b5fd',
+      success: '#059669',
+      warning: '#d97706',
+      error: '#dc2626',
+      info: '#8b5cf6'
     },
     fonts: {
       family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -212,20 +212,20 @@ export const defaultThemes: Theme[] = [
     }
   },
   {
-    name: 'mood-focus',
-    displayName: 'Deep Focus 🔥',
+    name: 'mood-sunset',
+    displayName: 'Sunset Glow 🌅',
     colors: {
-      primary: '#d32f2f',
-      secondary: '#f57c00',
-      background: '#fff3e0',
-      surface: '#ffe0b2',
-      text: '#bf360c',
-      textSecondary: '#d84315',
-      border: '#ffab91',
-      success: '#388e3c',
-      warning: '#f57c00',
-      error: '#d32f2f',
-      info: '#d32f2f'
+      primary: '#f59e0b',
+      secondary: '#ea580c',
+      background: '#fffbeb',
+      surface: '#fef3c7',
+      text: '#92400e',
+      textSecondary: '#d97706',
+      border: '#fbbf24',
+      success: '#059669',
+      warning: '#d97706',
+      error: '#dc2626',
+      info: '#f59e0b'
     },
     fonts: {
       family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
