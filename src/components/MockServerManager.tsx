@@ -41,6 +41,136 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
+// Array templates for different use cases
+const arrayTemplates = {
+  'products': {
+    name: 'Product List',
+    description: 'E-commerce products',
+    template: [
+      {
+        "id": 1,
+        "name": "Wireless Headphones",
+        "price": 99.99,
+        "category": "Electronics",
+        "inStock": true,
+        "rating": 4.5,
+        "image": "https://example.com/headphones.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Smart Watch",
+        "price": 199.99,
+        "category": "Electronics",
+        "inStock": true,
+        "rating": 4.8,
+        "image": "https://example.com/watch.jpg"
+      }
+    ]
+  },
+  'users': {
+    name: 'User List',
+    description: 'User management',
+    template: [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "admin",
+        "active": true,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "avatar": "https://example.com/avatar1.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "user",
+        "active": true,
+        "createdAt": "2024-01-16T14:20:00Z",
+        "avatar": "https://example.com/avatar2.jpg"
+      }
+    ]
+  },
+  'posts': {
+    name: 'Blog Posts',
+    description: 'Blog posts with content',
+    template: [
+      {
+        "id": 1,
+        "title": "Getting Started with API Development",
+        "content": "Learn the basics of building RESTful APIs...",
+        "author": "John Doe",
+        "publishedAt": "2024-01-15T09:00:00Z",
+        "tags": ["API", "Development", "Tutorial"],
+        "views": 1250,
+        "likes": 45
+      },
+      {
+        "id": 2,
+        "title": "Advanced JavaScript Patterns",
+        "content": "Explore modern JavaScript design patterns...",
+        "author": "Jane Smith",
+        "publishedAt": "2024-01-16T11:30:00Z",
+        "tags": ["JavaScript", "Patterns", "Advanced"],
+        "views": 890,
+        "likes": 32
+      }
+    ]
+  },
+  'orders': {
+    name: 'Order List',
+    description: 'E-commerce orders',
+    template: [
+      {
+        "id": "ORD-001",
+        "customerId": 1,
+        "customerName": "John Doe",
+        "items": [
+          {"productId": 1, "quantity": 2, "price": 99.99},
+          {"productId": 2, "quantity": 1, "price": 199.99}
+        ],
+        "total": 399.97,
+        "status": "shipped",
+        "orderDate": "2024-01-15T10:30:00Z",
+        "shippingAddress": "123 Main St, City, State"
+      }
+    ]
+  },
+  'notifications': {
+    name: 'Notifications',
+    description: 'User notifications',
+    template: [
+      {
+        "id": 1,
+        "type": "info",
+        "title": "Welcome to our platform!",
+        "message": "Thank you for signing up. Get started by exploring our features.",
+        "read": false,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "userId": 1
+      },
+      {
+        "id": 2,
+        "type": "warning",
+        "title": "Account verification needed",
+        "message": "Please verify your email address to continue.",
+        "read": true,
+        "createdAt": "2024-01-14T15:20:00Z",
+        "userId": 1
+      }
+    ]
+  },
+  'simple': {
+    name: 'Simple Array',
+    description: 'Basic array with minimal data',
+    template: [
+      {"id": 1, "name": "Item 1", "active": true},
+      {"id": 2, "name": "Item 2", "active": false},
+      {"id": 3, "name": "Item 3", "active": true}
+    ]
+  }
+};
+
 interface Route {
   id: string;
   method: string;
@@ -552,7 +682,16 @@ const ServerCreationForm: React.FC<{
                   { type: 'number', min: 1000, max: 65535, message: 'Port must be between 1000-65535' }
                 ]}
               >
-                <InputNumber style={{ width: '100%' }} placeholder="3000" />
+                <InputNumber 
+                  style={{ 
+                    width: '100%',
+                    background: 'var(--theme-background)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text)'
+                  }} 
+                  placeholder="3000"
+                  className="theme-input-number"
+                />
               </Form.Item>
             </Col>
             <Col span={6}>
@@ -585,11 +724,20 @@ const ServerCreationForm: React.FC<{
               padding: '0 4px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
-                  <ApiOutlined style={{ marginRight: '8px' }} />
+                <Title level={5} style={{ margin: 0, color: 'var(--theme-primary)' }}>
+                  <ApiOutlined style={{ marginRight: '8px', color: 'var(--theme-primary)' }} />
                   API Routes
                 </Title>
-                <Tag color="blue">{routes.length} routes</Tag>
+                <Tag 
+                  color="blue"
+                  style={{ 
+                    background: 'var(--theme-primary)',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                >
+                  {routes.length} routes
+                </Tag>
               </div>
               <Space>
                 <Button 
@@ -597,42 +745,44 @@ const ServerCreationForm: React.FC<{
                   size="small"
                   icon={<QuestionCircleOutlined />}
                   onClick={() => setShowExamples(!showExamples)}
+                  style={{ color: 'var(--theme-text-secondary)' }}
                 >
                   {showExamples ? 'Hide Examples' : 'View Examples'}
                 </Button>
-                <Button 
-                  type="primary" 
+                <CustomButton 
+                  variant="primary"
+                  size="small"
                   onClick={addRoute} 
                   icon={<PlusOutlined />}
                 >
                   Add Route
-                </Button>
+                </CustomButton>
               </Space>
             </div>
 
             {/* JSON Examples (Conditionally Rendered) */}
             {showExamples && (
               <div style={{ 
-                background: '#f6ffed', 
-                border: '1px solid #b7eb8f', 
+                background: 'var(--theme-surface)', 
+                border: '1px solid var(--theme-border)', 
                 borderRadius: '6px', 
                 padding: '16px', 
                 marginBottom: '16px'
               }}>
-              <Text strong style={{ color: '#52c41a', display: 'block', marginBottom: '12px' }}>
+              <Text strong style={{ color: 'var(--theme-primary)', display: 'block', marginBottom: '12px' }}>
                 💡 JSON Response Examples:
               </Text>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <Text strong>Simple Object:</Text>
+                  <Text strong style={{ color: 'var(--theme-text)' }}>Simple Object:</Text>
                   <pre style={{ 
                     margin: '8px 0', 
                     fontSize: '11px', 
-                    color: '#666',
-                    background: '#fff',
+                    color: 'var(--theme-text)',
+                    background: 'var(--theme-background)',
                     padding: '8px',
                     borderRadius: '4px',
-                    border: '1px solid #d9d9d9'
+                    border: '1px solid var(--theme-border)'
                   }}>
 {`{
   "message": "Hello World",
@@ -641,15 +791,15 @@ const ServerCreationForm: React.FC<{
                   </pre>
                 </div>
                 <div>
-                  <Text strong>Array of Objects:</Text>
+                  <Text strong style={{ color: 'var(--theme-text)' }}>Array of Objects:</Text>
                   <pre style={{ 
                     margin: '8px 0', 
                     fontSize: '11px', 
-                    color: '#666',
-                    background: '#fff',
+                    color: 'var(--theme-text)',
+                    background: 'var(--theme-background)',
                     padding: '8px',
                     borderRadius: '4px',
-                    border: '1px solid #d9d9d9'
+                    border: '1px solid var(--theme-border)'
                   }}>
 {`[
   {"id": 1, "name": "John"},
@@ -658,15 +808,15 @@ const ServerCreationForm: React.FC<{
                   </pre>
                 </div>
                 <div>
-                  <Text strong>Nested Object:</Text>
+                  <Text strong style={{ color: 'var(--theme-text)' }}>Nested Object:</Text>
                   <pre style={{ 
                     margin: '8px 0', 
                     fontSize: '11px', 
-                    color: '#666',
-                    background: '#fff',
+                    color: 'var(--theme-text)',
+                    background: 'var(--theme-background)',
                     padding: '8px',
                     borderRadius: '4px',
-                    border: '1px solid #d9d9d9'
+                    border: '1px solid var(--theme-border)'
                   }}>
 {`{
   "user": {
@@ -680,15 +830,15 @@ const ServerCreationForm: React.FC<{
                   </pre>
                 </div>
                 <div>
-                  <Text strong>Array with Mixed Data:</Text>
+                  <Text strong style={{ color: 'var(--theme-text)' }}>Array with Mixed Data:</Text>
                   <pre style={{ 
                     margin: '8px 0', 
                     fontSize: '11px', 
-                    color: '#666',
-                    background: '#fff',
+                    color: 'var(--theme-text)',
+                    background: 'var(--theme-background)',
                     padding: '8px',
                     borderRadius: '4px',
-                    border: '1px solid #d9d9d9'
+                    border: '1px solid var(--theme-border)'
                   }}>
 {`{
   "items": [
@@ -704,18 +854,25 @@ const ServerCreationForm: React.FC<{
             )}
             
             {/* Routes Container */}
-            <Card size="small" style={{ marginBottom: '16px' }}>
+            <Card 
+              size="small" 
+              style={{ 
+                marginBottom: '16px',
+                background: 'var(--theme-background)',
+                border: '1px solid var(--theme-border)'
+              }}
+            >
               {routes.length === 0 ? (
                 <div style={{ 
                   textAlign: 'center', 
                   padding: '40px 20px',
-                  color: '#8c8c8c'
+                  color: 'var(--theme-text-secondary)'
                 }}>
-                  <ApiOutlined style={{ fontSize: '48px', marginBottom: '16px', color: '#d9d9d9' }} />
+                  <ApiOutlined style={{ fontSize: '48px', marginBottom: '16px', color: 'var(--theme-text-secondary)' }} />
                   <div>
-                    <Text type="secondary">No routes configured yet</Text>
+                    <Text style={{ color: 'var(--theme-text-secondary)' }}>No routes configured yet</Text>
                     <br />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                    <Text style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
                       Click "Add Route" to create your first API endpoint
                     </Text>
                   </div>
@@ -725,20 +882,22 @@ const ServerCreationForm: React.FC<{
                   <div 
                     key={route.id} 
                     style={{ 
-                      border: '1px solid #e8e8e8',
+                      border: '1px solid var(--theme-border)',
                       borderRadius: '8px',
                       padding: '16px',
                       marginBottom: '12px',
-                      background: '#fafafa',
+                      background: 'var(--theme-surface)',
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#1890ff';
-                      e.currentTarget.style.background = '#f6ffed';
+                      e.currentTarget.style.borderColor = 'var(--theme-primary)';
+                      e.currentTarget.style.background = 'var(--theme-background)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#e8e8e8';
-                      e.currentTarget.style.background = '#fafafa';
+                      e.currentTarget.style.borderColor = 'var(--theme-border)';
+                      e.currentTarget.style.background = 'var(--theme-surface)';
+                      e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
                     {/* Route Header */}
@@ -746,21 +905,38 @@ const ServerCreationForm: React.FC<{
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center',
-                      marginBottom: '16px'
+                      marginBottom: '16px',
+                      paddingBottom: '12px',
+                      borderBottom: '1px solid var(--theme-border)'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Tag color={
-                          route.method === 'GET' ? 'green' :
-                          route.method === 'POST' ? 'blue' :
-                          route.method === 'PUT' ? 'orange' :
-                          route.method === 'DELETE' ? 'red' : 'purple'
-                        }>
+                        <Tag 
+                          color={
+                            route.method === 'GET' ? 'green' :
+                            route.method === 'POST' ? 'blue' :
+                            route.method === 'PUT' ? 'orange' :
+                            route.method === 'DELETE' ? 'red' : 'purple'
+                          }
+                          style={{ 
+                            fontWeight: 'bold',
+                            border: 'none'
+                          }}
+                        >
                           {route.method}
                         </Tag>
-                        <Text strong style={{ fontSize: '14px' }}>
+                        <Text strong style={{ fontSize: '14px', color: 'var(--theme-text)' }}>
                           {route.path || '/api/endpoint'}
                         </Text>
-                        <Tag color="default">Status: {route.statusCode}</Tag>
+                        <Tag 
+                          color="default"
+                          style={{ 
+                            background: 'var(--theme-surface)',
+                            color: 'var(--theme-text)',
+                            border: '1px solid var(--theme-border)'
+                          }}
+                        >
+                          Status: {route.statusCode}
+                        </Tag>
                       </div>
                       <Button 
                         size="small"
@@ -768,6 +944,7 @@ const ServerCreationForm: React.FC<{
                         icon={<DeleteOutlined />}
                         onClick={() => removeRoute(route.id)}
                         title="Delete route"
+                        style={{ color: 'var(--theme-text-secondary)' }}
                       />
                     </div>
 
@@ -775,7 +952,7 @@ const ServerCreationForm: React.FC<{
                     <Row gutter={[16, 16]}>
                       <Col span={6}>
                         <div>
-                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
                             Request Method
                           </Text>
                           <Select
@@ -808,20 +985,21 @@ const ServerCreationForm: React.FC<{
                       </Col>
                       <Col span={9}>
                         <div>
-                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
                             Endpoint Path
                           </Text>
                           <Input
                             value={route.path}
                             onChange={(e) => updateRoute(route.id, 'path', e.target.value)}
                             placeholder="/api/endpoint"
-                            prefix={<CodeOutlined style={{ color: '#8c8c8c' }} />}
+                            prefix={<CodeOutlined style={{ color: 'var(--theme-text-secondary)' }} />}
+                            style={{ background: 'var(--theme-background)', border: '1px solid var(--theme-border)' }}
                           />
                         </div>
                       </Col>
                       <Col span={9}>
                         <div>
-                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
                             Status Code
                           </Text>
                           <Select
@@ -849,8 +1027,8 @@ const ServerCreationForm: React.FC<{
                         alignItems: 'center',
                         marginBottom: '8px'
                       }}>
-                        <Text strong style={{ fontSize: '12px' }}>
-                          <FileTextOutlined style={{ marginRight: '6px' }} />
+                        <Text strong style={{ fontSize: '12px', color: 'var(--theme-text-secondary)' }}>
+                          <FileTextOutlined style={{ marginRight: '6px', color: 'var(--theme-text-secondary)' }} />
                           Response Body (JSON)
                         </Text>
                         <Space size="small">
@@ -885,26 +1063,54 @@ const ServerCreationForm: React.FC<{
                               />
                             </Tooltip>
                           </Upload>
-                          <Tooltip title="Insert array template">
-                            <Button 
-                              size="small" 
-                              onClick={() => {
-                                const arrayTemplate = [
-                                  {"id": 1, "name": "Item 1", "active": true},
-                                  {"id": 2, "name": "Item 2", "active": false}
-                                ];
-                                updateRoute(route.id, 'response', arrayTemplate);
+                          <Select
+                            placeholder="Templates"
+                            size="small"
+                            style={{ width: 180 }}
+                            popupClassName="template-dropdown"
+                            onSelect={(templateKey) => {
+                              const template = arrayTemplates[templateKey as keyof typeof arrayTemplates];
+                              if (template) {
+                                updateRoute(route.id, 'response', template.template);
                                 setRouteTextValues(prev => ({
                                   ...prev,
-                                  [route.id]: JSON.stringify(arrayTemplate, null, 2)
+                                  [route.id]: JSON.stringify(template.template, null, 2)
                                 }));
-                                message.success('Array template inserted');
-                              }}
-                              type="text"
-                            >
-                              Array
-                            </Button>
-                          </Tooltip>
+                                message.success(`${template.name} template inserted`);
+                              }
+                            }}
+                          >
+                            {Object.entries(arrayTemplates).map(([key, template]) => (
+                              <Option key={key} value={key}>
+                                <div style={{ 
+                                  display: 'flex', 
+                                  flexDirection: 'column', 
+                                  alignItems: 'flex-start',
+                                  maxWidth: '280px',
+                                  overflow: 'hidden'
+                                }}>
+                                  <Text strong style={{ 
+                                    color: 'var(--theme-text)',
+                                    fontSize: '9px',
+                                    lineHeight: '1.0'
+                                  }}>
+                                    {template.name}
+                                  </Text>
+                                  <Text style={{ 
+                                    fontSize: '6px', 
+                                    color: 'var(--theme-text-secondary)',
+                                    lineHeight: '1.0',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '260px'
+                                  }}>
+                                    {template.description}
+                                  </Text>
+                                </div>
+                              </Option>
+                            ))}
+                          </Select>
                         </Space>
                       </div>
                       <TextArea
@@ -930,7 +1136,10 @@ const ServerCreationForm: React.FC<{
                         style={{ 
                           fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
                           fontSize: '12px',
-                          lineHeight: '1.4'
+                          lineHeight: '1.4',
+                          background: 'var(--theme-background)',
+                          border: '1px solid var(--theme-border)',
+                          color: 'var(--theme-text)'
                         }}
                       />
                     </div>
@@ -1036,6 +1245,52 @@ const ServerCreationForm: React.FC<{
     </div>
   );
 };
+
+// Add CSS styling for InputNumber dark theme and template dropdown
+const inputNumberStyles = `
+  .theme-input-number .ant-input-number-input {
+    background: var(--theme-background) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: var(--theme-text) !important;
+  }
+  
+  .theme-input-number .ant-input-number-handler-wrap {
+    background: var(--theme-surface) !important;
+    border-left: 1px solid var(--theme-border) !important;
+  }
+  
+  .theme-input-number .ant-input-number-handler {
+    background: var(--theme-surface) !important;
+    border-color: var(--theme-border) !important;
+    color: var(--theme-text) !important;
+  }
+  
+  .theme-input-number .ant-input-number-handler:hover {
+    background: var(--theme-background) !important;
+    color: var(--theme-primary) !important;
+  }
+  
+  .theme-input-number .ant-input-number-handler-up {
+    border-bottom: 1px solid var(--theme-border) !important;
+  }
+  
+  .theme-input-number .ant-input-number-handler-down {
+    border-top: 1px solid var(--theme-border) !important;
+  }
+  
+  .template-dropdown {
+    background: var(--theme-background) !important;
+    border: 1px solid var(--theme-border) !important;
+    max-width: 300px !important;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = inputNumberStyles;
+  document.head.appendChild(styleSheet);
+}
 
 // Server Logs Viewer Component
 const ServerLogsViewer: React.FC<{ logs: any[] }> = ({ logs }) => {

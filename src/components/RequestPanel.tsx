@@ -394,11 +394,12 @@ export default function RequestPanel({
             alignItems: 'center', 
             gap: 12, 
             marginBottom: 16,
-            padding: '8px 12px',
-            background: '#f5f5f5',
-            borderRadius: 4
+            padding: '12px 16px',
+            background: 'var(--theme-surface)',
+            borderRadius: 8,
+            border: '1px solid var(--theme-border)'
           }}>
-            <Text strong>Response</Text>
+            <Text strong style={{ color: 'var(--theme-text)', fontSize: '16px' }}>Response</Text>
             {responseMeta.status && (
               <>
                 <Text 
@@ -410,10 +411,10 @@ export default function RequestPanel({
                 >
                   {responseMeta.status}
                 </Text>
-                <Text style={{ color: '#666', fontSize: '12px' }}>
+                <Text style={{ color: 'var(--theme-text-secondary)', fontSize: '12px' }}>
                   {responseMeta.durationMs}ms
                 </Text>
-                <Text style={{ color: '#666', fontSize: '12px' }}>
+                <Text style={{ color: 'var(--theme-text-secondary)', fontSize: '12px' }}>
                   {formatBytes(responseMeta.size)}
                 </Text>
               </>
@@ -425,28 +426,41 @@ export default function RequestPanel({
             <div style={{ marginBottom: 12 }}>
               <Collapse
                 size="small"
+                className="response-collapse"
+                style={{
+                  background: 'var(--theme-surface)',
+                  border: '1px solid var(--theme-border)',
+                  borderRadius: '6px'
+                }}
                 items={[
                   {
                     key: 'headers',
                     label: (
-                      <Text strong style={{ fontSize: '13px' }}>
+                      <Text strong style={{ fontSize: '13px', color: 'var(--theme-text)' }}>
                         Headers ({Object.keys(responseMeta.headers).length})
                       </Text>
                     ),
                     children: (
                       <div style={{ 
-                        background: '#fafafa', 
-                        padding: 8, 
-                        borderRadius: 4,
+                        background: 'var(--theme-background)', 
+                        padding: 12, 
+                        borderRadius: 6,
                         fontFamily: 'monospace',
-                        fontSize: '11px',
+                        fontSize: '12px',
                         height: '200px',
                         overflowY: 'auto',
-                        border: '1px solid #d9d9d9'
+                        border: '1px solid var(--theme-border)',
+                        color: 'var(--theme-text)'
                       }}>
                         {Object.entries(responseMeta.headers).map(([key, value]) => (
-                          <div key={key} style={{ marginBottom: 4, wordBreak: 'break-all' }}>
-                            <Text strong style={{ color: '#1890ff' }}>{key}:</Text> {value}
+                          <div key={key} style={{ 
+                            marginBottom: 6, 
+                            wordBreak: 'break-all',
+                            padding: '4px 0',
+                            borderBottom: '1px solid var(--theme-border)'
+                          }}>
+                            <Text strong style={{ color: 'var(--theme-primary)' }}>{key}:</Text> 
+                            <span style={{ color: 'var(--theme-text-secondary)', marginLeft: '8px' }}>{value}</span>
                           </div>
                         ))}
                       </div>
@@ -476,18 +490,27 @@ export default function RequestPanel({
               <Collapse
                 size="small"
                 defaultActiveKey={['body']}
+                className="response-collapse"
+                style={{
+                  background: 'var(--theme-surface)',
+                  border: '1px solid var(--theme-border)',
+                  borderRadius: '6px'
+                }}
                 items={[
                   {
                     key: 'body',
                     label: (
-                      <Text strong style={{ fontSize: '13px' }}>
+                      <Text strong style={{ fontSize: '13px', color: 'var(--theme-text)' }}>
                         Body ({formatBytes(responseText.length)})
                       </Text>
                     ),
                     children: (
                       <div style={{ 
                         height: '300px',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        background: 'var(--theme-background)',
+                        borderRadius: 6,
+                        border: '1px solid var(--theme-border)'
                       }}>
                         <Input.TextArea 
                           value={responseText} 
@@ -495,10 +518,13 @@ export default function RequestPanel({
                           placeholder="Response will appear here..."
                           style={{ 
                             fontFamily: 'monospace',
-                            fontSize: '11px',
+                            fontSize: '12px',
                             height: '100%',
                             resize: 'none',
-                            border: '1px solid #d9d9d9'
+                            background: 'var(--theme-background)',
+                            border: 'none',
+                            color: 'var(--theme-text)',
+                            padding: '12px'
                           }}
                         />
                       </div>
@@ -518,6 +544,28 @@ export default function RequestPanel({
 
   return (
     <>
+    <style>{`
+      .response-collapse .ant-collapse-header {
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border-bottom: 1px solid var(--theme-border) !important;
+      }
+      
+      .response-collapse .ant-collapse-content {
+        background: var(--theme-background) !important;
+        color: var(--theme-text) !important;
+      }
+      
+      .response-collapse .ant-collapse-content-box {
+        background: var(--theme-background) !important;
+        color: var(--theme-text) !important;
+      }
+      
+      .response-collapse .ant-collapse-item {
+        border: 1px solid var(--theme-border) !important;
+        background: var(--theme-surface) !important;
+      }
+    `}</style>
     <Content style={{ padding: '24px', margin: 0, background: 'var(--theme-background)', height: '100%', overflow: 'auto' }}>
       {/* Request Builder */}
       <Flex gap="small" align="center" style={{ marginBottom: '20px' }}>
@@ -590,6 +638,7 @@ export default function RequestPanel({
           activeKey={activeContentTab}
           onChange={onContentTabChange}
           items={contentTabItems}
+          className="enhanced-content-tabs"
           style={{ marginTop: 20 }}
         />
       </div>
@@ -620,6 +669,42 @@ const pulseAnimation = `
     }
   }
 `;
+
+// Enhanced content tabs styling for dark theme
+const enhancedContentTabStyles = `
+  .enhanced-content-tabs .ant-tabs-tab {
+    padding: 14px 24px !important;
+    margin-right: 2px !important;
+    transition: all 0.2s ease !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+  }
+  
+  .enhanced-content-tabs .ant-tabs-tab:hover {
+    transform: translateY(-1px) !important;
+  }
+  
+  .enhanced-content-tabs .ant-tabs-tab-active {
+    font-weight: 600 !important;
+  }
+  
+  .enhanced-content-tabs .ant-tabs-ink-bar {
+    height: 3px !important;
+    border-radius: 2px !important;
+  }
+  
+  .enhanced-content-tabs .ant-tabs-content-holder {
+    padding: 24px !important;
+    border-radius: 0 0 8px 8px !important;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = enhancedContentTabStyles;
+  document.head.appendChild(styleSheet);
+}
 
 // Helper function to get status code color
 function getStatusColor(status: number): string {

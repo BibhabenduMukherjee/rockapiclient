@@ -90,6 +90,7 @@ export default function RequestTabs({
             onChange={onTabChange}
             items={tabItems}
             size="small"
+            className="enhanced-request-tabs"
             style={{ 
               margin: 0
             }}
@@ -120,4 +121,34 @@ export default function RequestTabs({
       </div>
     </div>
   );
+}
+
+// Enhanced tab styling for dark theme
+const enhancedTabStyles = `
+  .enhanced-request-tabs .ant-tabs-tab {
+    padding: 12px 20px !important;
+    margin-right: 4px !important;
+    transition: all 0.2s ease !important;
+    border-radius: 6px !important;
+  }
+  
+  .enhanced-request-tabs .ant-tabs-tab:hover {
+    transform: translateY(-1px) !important;
+  }
+  
+  .enhanced-request-tabs .ant-tabs-tab-active {
+    font-weight: 600 !important;
+  }
+  
+  .enhanced-request-tabs .ant-tabs-ink-bar {
+    height: 3px !important;
+    border-radius: 2px !important;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = enhancedTabStyles;
+  document.head.appendChild(styleSheet);
 }
