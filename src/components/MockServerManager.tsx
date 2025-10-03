@@ -19,7 +19,8 @@ import {
   List,
   Badge,
   Tooltip,
-  Upload
+  Upload,
+  Collapse
 } from 'antd';
 import CustomButton from './CustomButton';
 import { 
@@ -30,7 +31,10 @@ import {
   ThunderboltOutlined,
   EyeOutlined,
   UploadOutlined,
-  PlayCircleOutlined
+  PlayCircleOutlined,
+  QuestionCircleOutlined,
+  CodeOutlined,
+  FileTextOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -425,45 +429,88 @@ const ServerCreationForm: React.FC<{
   const [serverType, setServerType] = useState<'http' | 'websocket'>('http');
   const [routes, setRoutes] = useState<Route[]>([]);
   const [messageHandlers, setMessageHandlers] = useState<WebSocketHandler[]>([]);
+  const [routeTextValues, setRouteTextValues] = useState<Record<string, string>>({});
+  const [handlerTextValues, setHandlerTextValues] = useState<Record<string, string>>({});
+  const [showExamples, setShowExamples] = useState(false);
 
   const addRoute = () => {
+    const routeId = Date.now().toString();
     const newRoute: Route = {
-      id: Date.now().toString(),
+      id: routeId,
       method: 'GET',
       path: '/api/endpoint',
       statusCode: 200,
       response: { message: 'Hello World' }
     };
     setRoutes([...routes, newRoute]);
+    // Initialize text value for this route
+    setRouteTextValues(prev => ({
+      ...prev,
+      [routeId]: JSON.stringify(newRoute.response, null, 2)
+    }));
   };
 
   const updateRoute = (id: string, field: keyof Route, value: any) => {
     setRoutes(routes.map(route => 
       route.id === id ? { ...route, [field]: value } : route
     ));
+    
+    // If updating response field, also update text value
+    if (field === 'response') {
+      setRouteTextValues(prev => ({
+        ...prev,
+        [id]: typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+      }));
+    }
   };
 
   const removeRoute = (id: string) => {
     setRoutes(routes.filter(route => route.id !== id));
+    // Clean up text value
+    setRouteTextValues(prev => {
+      const newValues = { ...prev };
+      delete newValues[id];
+      return newValues;
+    });
   };
 
   const addMessageHandler = () => {
+    const handlerId = Date.now().toString();
     const newHandler: WebSocketHandler = {
-      id: Date.now().toString(),
+      id: handlerId,
       type: 'message',
       response: { echo: 'Message received' }
     };
     setMessageHandlers([...messageHandlers, newHandler]);
+    // Initialize text value for this handler
+    setHandlerTextValues(prev => ({
+      ...prev,
+      [handlerId]: JSON.stringify(newHandler.response, null, 2)
+    }));
   };
 
   const updateMessageHandler = (id: string, field: keyof WebSocketHandler, value: any) => {
     setMessageHandlers(messageHandlers.map(handler => 
       handler.id === id ? { ...handler, [field]: value } : handler
     ));
+    
+    // If updating response field, also update text value
+    if (field === 'response') {
+      setHandlerTextValues(prev => ({
+        ...prev,
+        [id]: typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+      }));
+    }
   };
 
   const removeMessageHandler = (id: string) => {
     setMessageHandlers(messageHandlers.filter(handler => handler.id !== id));
+    // Clean up text value
+    setHandlerTextValues(prev => {
+      const newValues = { ...prev };
+      delete newValues[id];
+      return newValues;
+    });
   };
 
   const handleSubmit = () => {
@@ -528,115 +575,370 @@ const ServerCreationForm: React.FC<{
         </Card>
 
         {serverType === 'http' && (
-          <Card size="small" style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
-                <ApiOutlined style={{ marginRight: '8px' }} />
-                API Routes
-              </Title>
-              <Button 
-                type="primary" 
-                size="small"
-                onClick={addRoute} 
-                icon={<PlusOutlined />}
-              >
-                Add Route
-              </Button>
+          <>
+            {/* API Routes Header with Add Button Outside */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '16px',
+              padding: '0 4px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Title level={5} style={{ margin: 0, color: '#52c41a' }}>
+                  <ApiOutlined style={{ marginRight: '8px' }} />
+                  API Routes
+                </Title>
+                <Tag color="blue">{routes.length} routes</Tag>
+              </div>
+              <Space>
+                <Button 
+                  type="text" 
+                  size="small"
+                  icon={<QuestionCircleOutlined />}
+                  onClick={() => setShowExamples(!showExamples)}
+                >
+                  {showExamples ? 'Hide Examples' : 'View Examples'}
+                </Button>
+                <Button 
+                  type="primary" 
+                  onClick={addRoute} 
+                  icon={<PlusOutlined />}
+                >
+                  Add Route
+                </Button>
+              </Space>
             </div>
-          {routes.map((route, index) => (
-            <Card key={route.id} size="small" style={{ marginBottom: '8px' }}>
-              <Row gutter={8}>
-                <Col span={4}>
-                  <Select
-                    value={route.method}
-                    onChange={(value) => updateRoute(route.id, 'method', value)}
-                    style={{ width: '100%' }}
-                  >
-                    <Option value="GET">GET</Option>
-                    <Option value="POST">POST</Option>
-                    <Option value="PUT">PUT</Option>
-                    <Option value="DELETE">DELETE</Option>
-                    <Option value="PATCH">PATCH</Option>
-                  </Select>
-                </Col>
-                <Col span={6}>
-                  <Input
-                    value={route.path}
-                    onChange={(e) => updateRoute(route.id, 'path', e.target.value)}
-                    placeholder="/api/endpoint"
-                  />
-                </Col>
-                <Col span={3}>
-                  <InputNumber
-                    value={route.statusCode}
-                    onChange={(value) => updateRoute(route.id, 'statusCode', value)}
-                    placeholder="200"
-                    style={{ width: '100%' }}
-                  />
-                </Col>
-                <Col span={6}>
-                  <TextArea
-                    value={JSON.stringify(route.response, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        updateRoute(route.id, 'response', parsed);
-                      } catch (error: any) {
-                        // Keep the current value if JSON is invalid
-                        console.warn('Invalid JSON in response field:', error.message);
-                      }
+
+            {/* JSON Examples (Conditionally Rendered) */}
+            {showExamples && (
+              <div style={{ 
+                background: '#f6ffed', 
+                border: '1px solid #b7eb8f', 
+                borderRadius: '6px', 
+                padding: '16px', 
+                marginBottom: '16px'
+              }}>
+              <Text strong style={{ color: '#52c41a', display: 'block', marginBottom: '12px' }}>
+                💡 JSON Response Examples:
+              </Text>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <Text strong>Simple Object:</Text>
+                  <pre style={{ 
+                    margin: '8px 0', 
+                    fontSize: '11px', 
+                    color: '#666',
+                    background: '#fff',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #d9d9d9'
+                  }}>
+{`{
+  "message": "Hello World",
+  "status": "success"
+}`}
+                  </pre>
+                </div>
+                <div>
+                  <Text strong>Array of Objects:</Text>
+                  <pre style={{ 
+                    margin: '8px 0', 
+                    fontSize: '11px', 
+                    color: '#666',
+                    background: '#fff',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #d9d9d9'
+                  }}>
+{`[
+  {"id": 1, "name": "John"},
+  {"id": 2, "name": "Jane"}
+]`}
+                  </pre>
+                </div>
+                <div>
+                  <Text strong>Nested Object:</Text>
+                  <pre style={{ 
+                    margin: '8px 0', 
+                    fontSize: '11px', 
+                    color: '#666',
+                    background: '#fff',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #d9d9d9'
+                  }}>
+{`{
+  "user": {
+    "id": 1,
+    "profile": {
+      "name": "John",
+      "email": "john@example.com"
+    }
+  }
+}`}
+                  </pre>
+                </div>
+                <div>
+                  <Text strong>Array with Mixed Data:</Text>
+                  <pre style={{ 
+                    margin: '8px 0', 
+                    fontSize: '11px', 
+                    color: '#666',
+                    background: '#fff',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #d9d9d9'
+                  }}>
+{`{
+  "items": [
+    {"type": "product", "name": "Laptop"},
+    {"type": "service", "name": "Support"}
+  ],
+  "total": 2
+}`}
+                  </pre>
+                </div>
+              </div>
+              </div>
+            )}
+            
+            {/* Routes Container */}
+            <Card size="small" style={{ marginBottom: '16px' }}>
+              {routes.length === 0 ? (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px 20px',
+                  color: '#8c8c8c'
+                }}>
+                  <ApiOutlined style={{ fontSize: '48px', marginBottom: '16px', color: '#d9d9d9' }} />
+                  <div>
+                    <Text type="secondary">No routes configured yet</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Click "Add Route" to create your first API endpoint
+                    </Text>
+                  </div>
+                </div>
+              ) : (
+                routes.map((route, index) => (
+                  <div 
+                    key={route.id} 
+                    style={{ 
+                      border: '1px solid #e8e8e8',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: '12px',
+                      background: '#fafafa',
+                      transition: 'all 0.2s ease'
                     }}
-                    placeholder='{"message": "Hello World"}'
-                    rows={2}
-                  />
-                </Col>
-                <Col span={2}>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <Upload
-                      accept=".json"
-                      showUploadList={false}
-                      beforeUpload={(file) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          try {
-                            const content = e.target?.result as string;
-                            const parsed = JSON.parse(content);
-                            updateRoute(route.id, 'response', parsed);
-                            message.success('JSON file loaded successfully');
-                          } catch (error: any) {
-                            message.error('Invalid JSON file: ' + error.message);
-                          }
-                        };
-                        reader.readAsText(file);
-                        return false; // Prevent upload
-                      }}
-                    >
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#1890ff';
+                      e.currentTarget.style.background = '#f6ffed';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e8e8e8';
+                      e.currentTarget.style.background = '#fafafa';
+                    }}
+                  >
+                    {/* Route Header */}
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Tag color={
+                          route.method === 'GET' ? 'green' :
+                          route.method === 'POST' ? 'blue' :
+                          route.method === 'PUT' ? 'orange' :
+                          route.method === 'DELETE' ? 'red' : 'purple'
+                        }>
+                          {route.method}
+                        </Tag>
+                        <Text strong style={{ fontSize: '14px' }}>
+                          {route.path || '/api/endpoint'}
+                        </Text>
+                        <Tag color="default">Status: {route.statusCode}</Tag>
+                      </div>
                       <Button 
-                        size="small" 
-                        icon={<UploadOutlined />}
-                        title="Upload JSON file"
-                        type="default"
-                        style={{ width: '100%' }}
+                        size="small"
+                        danger 
+                        icon={<DeleteOutlined />}
+                        onClick={() => removeRoute(route.id)}
+                        title="Delete route"
                       />
-                    </Upload>
+                    </div>
+
+                    {/* Route Configuration */}
+                    <Row gutter={[16, 16]}>
+                      <Col span={6}>
+                        <div>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                            Request Method
+                          </Text>
+                          <Select
+                            value={route.method}
+                            onChange={(value) => updateRoute(route.id, 'method', value)}
+                            style={{ width: '100%' }}
+                          >
+                            <Option value="GET">
+                              <Tag color="green" style={{ marginRight: '8px' }}>GET</Tag>
+                              Retrieve data
+                            </Option>
+                            <Option value="POST">
+                              <Tag color="blue" style={{ marginRight: '8px' }}>POST</Tag>
+                              Create data
+                            </Option>
+                            <Option value="PUT">
+                              <Tag color="orange" style={{ marginRight: '8px' }}>PUT</Tag>
+                              Update data
+                            </Option>
+                            <Option value="DELETE">
+                              <Tag color="red" style={{ marginRight: '8px' }}>DELETE</Tag>
+                              Remove data
+                            </Option>
+                            <Option value="PATCH">
+                              <Tag color="purple" style={{ marginRight: '8px' }}>PATCH</Tag>
+                              Partial update
+                            </Option>
+                          </Select>
+                        </div>
+                      </Col>
+                      <Col span={9}>
+                        <div>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                            Endpoint Path
+                          </Text>
+                          <Input
+                            value={route.path}
+                            onChange={(e) => updateRoute(route.id, 'path', e.target.value)}
+                            placeholder="/api/endpoint"
+                            prefix={<CodeOutlined style={{ color: '#8c8c8c' }} />}
+                          />
+                        </div>
+                      </Col>
+                      <Col span={9}>
+                        <div>
+                          <Text strong style={{ display: 'block', marginBottom: '8px', fontSize: '12px' }}>
+                            Status Code
+                          </Text>
+                          <Select
+                            value={route.statusCode}
+                            onChange={(value) => updateRoute(route.id, 'statusCode', value)}
+                            style={{ width: '100%' }}
+                          >
+                            <Option value={200}>200 - OK</Option>
+                            <Option value={201}>201 - Created</Option>
+                            <Option value={400}>400 - Bad Request</Option>
+                            <Option value={401}>401 - Unauthorized</Option>
+                            <Option value={403}>403 - Forbidden</Option>
+                            <Option value={404}>404 - Not Found</Option>
+                            <Option value={500}>500 - Internal Server Error</Option>
+                          </Select>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    {/* Response Body Section */}
+                    <div style={{ marginTop: '16px' }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginBottom: '8px'
+                      }}>
+                        <Text strong style={{ fontSize: '12px' }}>
+                          <FileTextOutlined style={{ marginRight: '6px' }} />
+                          Response Body (JSON)
+                        </Text>
+                        <Space size="small">
+                          <Upload
+                            accept=".json"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                try {
+                                  const content = e.target?.result as string;
+                                  const parsed = JSON.parse(content);
+                                  updateRoute(route.id, 'response', parsed);
+                                  setRouteTextValues(prev => ({
+                                    ...prev,
+                                    [route.id]: JSON.stringify(parsed, null, 2)
+                                  }));
+                                  message.success('JSON file loaded successfully');
+                                } catch (error: any) {
+                                  message.error('Invalid JSON file: ' + error.message);
+                                }
+                              };
+                              reader.readAsText(file);
+                              return false;
+                            }}
+                          >
+                            <Tooltip title="Upload JSON file">
+                              <Button 
+                                size="small" 
+                                icon={<UploadOutlined />}
+                                type="text"
+                              />
+                            </Tooltip>
+                          </Upload>
+                          <Tooltip title="Insert array template">
+                            <Button 
+                              size="small" 
+                              onClick={() => {
+                                const arrayTemplate = [
+                                  {"id": 1, "name": "Item 1", "active": true},
+                                  {"id": 2, "name": "Item 2", "active": false}
+                                ];
+                                updateRoute(route.id, 'response', arrayTemplate);
+                                setRouteTextValues(prev => ({
+                                  ...prev,
+                                  [route.id]: JSON.stringify(arrayTemplate, null, 2)
+                                }));
+                                message.success('Array template inserted');
+                              }}
+                              type="text"
+                            >
+                              Array
+                            </Button>
+                          </Tooltip>
+                        </Space>
+                      </div>
+                      <TextArea
+                        value={routeTextValues[route.id] || JSON.stringify(route.response, null, 2)}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          setRouteTextValues(prev => ({
+                            ...prev,
+                            [route.id]: newValue
+                          }));
+                        }}
+                        onBlur={(e) => {
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            updateRoute(route.id, 'response', parsed);
+                          } catch (error: any) {
+                            console.warn('Invalid JSON in response field:', error.message);
+                            message.warning('Invalid JSON format. Please check your syntax.');
+                          }
+                        }}
+                        placeholder='{"message": "Hello World", "status": "success"}'
+                        rows={4}
+                        style={{ 
+                          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                          fontSize: '12px',
+                          lineHeight: '1.4'
+                        }}
+                      />
+                    </div>
                   </div>
-                </Col>
-                <Col span={2}>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <Button 
-                      size="small"
-                      danger 
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeRoute(route.id)}
-                      title="Delete route"
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                </Col>
-              </Row>
+                ))
+              )}
             </Card>
-            ))}
-          </Card>
+          </>
         )}
 
         {serverType === 'websocket' && (
@@ -667,18 +969,29 @@ const ServerCreationForm: React.FC<{
                 </Col>
                 <Col span={15}>
                   <TextArea
-                    value={JSON.stringify(handler.response, null, 2)}
+                    value={handlerTextValues[handler.id] || JSON.stringify(handler.response, null, 2)}
                     onChange={(e) => {
+                      const newValue = e.target.value;
+                      // Update the text value state
+                      setHandlerTextValues(prev => ({
+                        ...prev,
+                        [handler.id]: newValue
+                      }));
+                    }}
+                    onBlur={(e) => {
+                      // Only parse JSON when user finishes editing (onBlur)
                       try {
                         const parsed = JSON.parse(e.target.value);
                         updateMessageHandler(handler.id, 'response', parsed);
                       } catch (error: any) {
-                        // Keep the current value if JSON is invalid
+                        // If JSON is invalid, keep the text as is but show a warning
                         console.warn('Invalid JSON in handler response field:', error.message);
+                        message.warning('Invalid JSON format. Please check your syntax.');
                       }
                     }}
                     placeholder='{"echo": "Message received"}'
                     rows={2}
+                    style={{ fontFamily: 'monospace' }}
                   />
                 </Col>
                 <Col span={3}>

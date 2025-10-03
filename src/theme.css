@@ -95,18 +95,18 @@ body {
 
 /* Dark theme specific overrides */
 .theme-dark {
-  --theme-primary: #177ddc;
-  --theme-secondary: #642ab5;
-  --theme-background: #141414;
-  --theme-background-secondary: #1a1a1a;
-  --theme-surface: #1f1f1f;
+  --theme-primary: #1890ff;
+  --theme-secondary: #722ed1;
+  --theme-background: #1a1a1a;
+  --theme-background-secondary: #262626;
+  --theme-surface: #262626;
   --theme-text: #ffffff;
-  --theme-text-secondary: #a6a6a6;
+  --theme-text-secondary: #bfbfbf;
   --theme-border: #434343;
-  --theme-success: #49aa19;
-  --theme-warning: #d89614;
-  --theme-error: #dc4446;
-  --theme-info: #177ddc;
+  --theme-success: #52c41a;
+  --theme-warning: #faad14;
+  --theme-error: #ff4d4f;
+  --theme-info: #1890ff;
 }
 
 /* High contrast theme specific overrides */
@@ -146,6 +146,519 @@ body {
   width: var(--theme-sidebar-width) !important;
   min-width: var(--theme-sidebar-width) !important;
   max-width: var(--theme-sidebar-width) !important;
+}
+
+/* Dark mode Ant Design component fixes */
+.theme-dark .ant-tabs {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-tab {
+  color: var(--theme-text-secondary) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-tab:hover {
+  color: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-tab-active {
+  color: var(--theme-primary) !important;
+  background: var(--theme-surface) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-content-holder {
+  background: var(--theme-background) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-tabpane {
+  background: var(--theme-background) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-ink-bar {
+  background: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-nav {
+  background: var(--theme-background) !important;
+}
+
+.theme-dark .ant-tabs .ant-tabs-nav-wrap {
+  background: var(--theme-background) !important;
+}
+
+/* Button fixes for dark mode */
+.theme-dark .ant-btn {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-btn:hover {
+  background: var(--theme-background-secondary) !important;
+  border-color: var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-btn-text {
+  background: transparent !important;
+  border: none !important;
+  color: var(--theme-text-secondary) !important;
+}
+
+.theme-dark .ant-btn-text:hover {
+  background: var(--theme-surface) !important;
+  color: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-btn-primary {
+  background: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .ant-btn-primary:hover {
+  background: #40a9ff !important;
+  border-color: #40a9ff !important;
+  color: #ffffff !important;
+}
+
+/* Input and Select fixes for dark mode */
+.theme-dark .ant-input {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-input::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.6 !important;
+}
+
+.theme-dark .ant-input:focus {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.theme-dark .ant-input:hover {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-primary) !important;
+}
+
+/* TextArea specific fixes */
+.theme-dark .ant-input.ant-input-textarea {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-input.ant-input-textarea::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.6 !important;
+}
+
+.theme-dark .ant-select {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-select .ant-select-selector {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-select .ant-select-selection-placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.6 !important;
+}
+
+.theme-dark .ant-select .ant-select-selection-item {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-select:hover .ant-select-selector {
+  border-color: var(--theme-primary) !important;
+}
+
+.theme-dark .ant-select-focused .ant-select-selector {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.theme-dark .ant-select-arrow {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Select dropdown menu fixes */
+.theme-dark .ant-select-dropdown {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-select-dropdown .ant-select-item {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-select-dropdown .ant-select-item:hover {
+  background: var(--theme-background-secondary) !important;
+}
+
+.theme-dark .ant-select-dropdown .ant-select-item-option-selected {
+  background: var(--theme-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Tag fixes for dark mode */
+.theme-dark .ant-tag {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Card fixes for dark mode */
+.theme-dark .ant-card {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-card .ant-card-head {
+  background: var(--theme-surface) !important;
+  border-bottom-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-card .ant-card-body {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Modal fixes for dark mode */
+.theme-dark .ant-modal .ant-modal-content {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-modal .ant-modal-header {
+  background: var(--theme-surface) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-modal .ant-modal-title {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-modal .ant-modal-body {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Dropdown fixes for dark mode */
+.theme-dark .ant-dropdown {
+  background: var(--theme-surface) !important;
+}
+
+.theme-dark .ant-dropdown .ant-dropdown-menu {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-dropdown .ant-dropdown-menu-item {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-dropdown .ant-dropdown-menu-item:hover {
+  background: var(--theme-background-secondary) !important;
+  color: var(--theme-primary) !important;
+}
+
+/* Layout and content area fixes for dark mode */
+.theme-dark .ant-layout {
+  background: var(--theme-background) !important;
+}
+
+.theme-dark .ant-layout-content {
+  background: var(--theme-background) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-layout-sider {
+  background: var(--theme-surface) !important;
+}
+
+/* Typography fixes for dark mode */
+.theme-dark .ant-typography {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-typography h1,
+.theme-dark .ant-typography h2,
+.theme-dark .ant-typography h3,
+.theme-dark .ant-typography h4,
+.theme-dark .ant-typography h5,
+.theme-dark .ant-typography h6 {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-typography .ant-typography-title {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-typography .ant-typography-paragraph {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-typography .ant-typography-caption {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* General text and label fixes */
+.theme-dark label {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark span {
+  color: inherit !important;
+}
+
+.theme-dark p {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark div {
+  color: inherit !important;
+}
+
+/* Form fixes for dark mode */
+.theme-dark .ant-form {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-form-item-label > label {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-form-item-explain {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Table fixes for dark mode */
+.theme-dark .ant-table {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-table-thead > tr > th {
+  background: var(--theme-background-secondary) !important;
+  color: var(--theme-text) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-table-tbody > tr > td {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-table-tbody > tr:hover > td {
+  background: var(--theme-background-secondary) !important;
+}
+
+/* Collapse fixes for dark mode */
+.theme-dark .ant-collapse {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-collapse > .ant-collapse-item {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.theme-dark .ant-collapse .ant-collapse-header {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-collapse .ant-collapse-content {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-top-color: var(--theme-border) !important;
+}
+
+/* Tooltip fixes for dark mode */
+.theme-dark .ant-tooltip .ant-tooltip-inner {
+  background: var(--theme-background-secondary) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-tooltip .ant-tooltip-arrow::before {
+  background: var(--theme-background-secondary) !important;
+}
+
+/* Notification fixes for dark mode */
+.theme-dark .ant-notification {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-notification .ant-notification-notice {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* Message fixes for dark mode */
+.theme-dark .ant-message {
+  color: var(--theme-text) !important;
+}
+
+.theme-dark .ant-message .ant-message-notice-content {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Additional robust fixes for inputs and placeholders */
+.theme-dark input {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark input::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.7 !important;
+}
+
+.theme-dark textarea {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-dark textarea::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.7 !important;
+}
+
+/* Specific fixes for header components */
+.theme-dark .ant-tabs-tab-btn {
+  color: var(--theme-text-secondary) !important;
+}
+
+.theme-dark .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--theme-primary) !important;
+}
+
+/* Force text color for all elements in dark mode */
+.theme-dark * {
+  border-color: inherit !important;
+}
+
+.theme-dark *:not(.ant-btn):not(.ant-tag):not(.ant-badge) {
+  color: inherit !important;
+}
+
+/* Ensure proper inheritance for nested elements */
+.theme-dark .ant-layout-content * {
+  color: inherit !important;
+}
+
+/* Fix for any remaining black text issues */
+.theme-dark [style*="color: rgb(0, 0, 0)"],
+.theme-dark [style*="color: #000"],
+.theme-dark [style*="color: black"] {
+  color: var(--theme-text) !important;
+}
+
+/* Specific fixes for HeadersTab and other components with hardcoded styles */
+.theme-dark [style*="backgroundColor: #fff"],
+.theme-dark [style*="background-color: #fff"],
+.theme-dark [style*="backgroundColor: #ffffff"],
+.theme-dark [style*="background-color: #ffffff"] {
+  background-color: var(--theme-surface) !important;
+}
+
+.theme-dark [style*="backgroundColor: #f5f5f5"],
+.theme-dark [style*="background-color: #f5f5f5"] {
+  background-color: var(--theme-background-secondary) !important;
+}
+
+.theme-dark [style*="border: 1px solid #f0f0f0"],
+.theme-dark [style*="border:1px solid #f0f0f0"] {
+  border: 1px solid var(--theme-border) !important;
+}
+
+.theme-dark [style*="color: #999"],
+.theme-dark [style*="color:#999"] {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Force override for specific problematic elements (but exclude theme previews) */
+.theme-dark div[style*="backgroundColor"]:not(.theme-preview-color),
+.theme-dark div[style*="background-color"]:not(.theme-preview-color),
+.theme-dark span[style*="backgroundColor"]:not(.theme-preview-color),
+.theme-dark span[style*="background-color"]:not(.theme-preview-color) {
+  background-color: var(--theme-surface) !important;
+}
+
+.theme-dark div[style*="border: 1px solid"] {
+  border-color: var(--theme-border) !important;
+}
+
+/* Preserve theme preview colors - Force override */
+.theme-dark .theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark span.theme-preview-color {
+  background-color: inherit !important;
+}
+
+/* Additional specificity for theme previews in select options */
+.theme-dark .ant-select-item .theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-select-item-option .theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-select-item-option-content .theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-select-item span.theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-select-item-option span.theme-preview-color {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-select-item-option-content span.theme-preview-color {
+  background-color: inherit !important;
+}
+
+/* Color picker exceptions */
+.theme-dark .ant-color-picker,
+.theme-dark .ant-color-picker * {
+  background-color: inherit !important;
+}
+
+/* Ensure color swatches in color picker maintain their colors */
+.theme-dark .ant-color-picker-color-block {
+  background-color: inherit !important;
+}
+
+.theme-dark .ant-color-picker-trigger {
+  background-color: inherit !important;
 }
 
 /* Custom spacing */
@@ -402,6 +915,28 @@ body {
 .ant-layout-header {
   background: var(--theme-background) !important;
   border-bottom: 1px solid var(--theme-border) !important;
+}
+
+/* Layout height fixes */
+.ant-layout {
+  height: 100% !important;
+}
+
+.ant-layout-sider {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure no white backgrounds show through */
+body, html {
+  height: 100% !important;
+  background-color: var(--theme-background) !important;
+}
+
+#root {
+  height: 100% !important;
+  background-color: var(--theme-background) !important;
 }
 
 .ant-layout-header button {

@@ -16,6 +16,7 @@ let userDataPath;
 let collectionsFilePath;
 let historyFilePath;
 let envsFilePath;
+let serverConfigsFilePath;
 
 if (process.env.NODE_ENV === 'development') {
   try {   
@@ -45,6 +46,7 @@ function createWindow() {
   collectionsFilePath = path.join(userDataPath, 'collections.json');
   historyFilePath = path.join(userDataPath, 'history.json');
   envsFilePath = path.join(userDataPath, 'environments.json');
+  serverConfigsFilePath = path.join(userDataPath, 'server-configs.json');
 
   mainWindow = new BrowserWindow({
     width: placeholder.window.width || 800,
@@ -70,7 +72,7 @@ app.whenReady().then(() => {
   // Initialize server manager first (only if express is available)
   try {
     const ServerManager = require('./main/serverManager');
-    serverManager = new ServerManager();
+    serverManager = new ServerManager(serverConfigsFilePath);
   } catch (error) {
     console.warn('ServerManager not available:', error.message);
     // Continue without server manager functionality
