@@ -1,24 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Typography } from 'antd';
 import { CodeGenConfig, CodeGenType, generateCode } from '../utils/codeGenerator';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-csharp';
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-markup-templating';
-import 'prismjs/components/prism-ruby';
-import 'prismjs/components/prism-swift';
-import 'prismjs/components/prism-kotlin';
-import 'prismjs/components/prism-dart';
-import 'prismjs/components/prism-r';
-import 'prismjs/components/prism-powershell';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/themes/prism-tomorrow.css';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
 
 interface EnhancedCodeGeneratorProps {
   visible: boolean;
@@ -115,11 +99,11 @@ export default function EnhancedCodeGenerator({ visible, onClose, config }: Enha
   const generatedCode = generateCode(config, selectedLanguage);
   const prismLanguage = getPrismLanguage(selectedLanguage);
   
-  // Use Prism.js for syntax highlighting
+  // Use highlight.js for syntax highlighting
   const highlightedCode = useMemo(() => {
     try {
-      if (Prism.languages[prismLanguage]) {
-        return Prism.highlight(generatedCode, Prism.languages[prismLanguage], prismLanguage);
+      if (hljs.getLanguage(prismLanguage)) {
+        return hljs.highlight(generatedCode, { language: prismLanguage }).value;
       }
       return generatedCode;
     } catch (error) {

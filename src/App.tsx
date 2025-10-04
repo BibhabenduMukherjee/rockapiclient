@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Layout, Modal, message, Select, Typography, Button } from 'antd';
+import React, { useEffect, useRef, useState, useCallback, Suspense } from 'react';
+import { Layout, Modal, message, Select, Typography, Button, Spin } from 'antd';
 import { SettingOutlined, ThunderboltOutlined, StarFilled, StarOutlined, BarChartOutlined } from '@ant-design/icons';
 
 import { useCollections } from './hooks/useCollections';
@@ -18,16 +18,17 @@ import RequestPanel from './components/RequestPanel';
 import CommandPalette from './components/CommandPalette';
 import RequestTemplates from './components/RequestTemplates';
 import ThemeSettings from './components/ThemeSettings';
-import AppTour, { TourButton } from './components/AppTour';
 import BookmarksPanel from './components/BookmarksPanel';
 import MoodSelector from './components/MoodSelector';
 import Preloader from './components/Preloader';
 import { showRequestSuccess, showRequestError, showCollectionSaved } from './components/EnhancedNotifications';
 import { sendRequest, RequestConfig } from './utils/requestSender';
 import { generateCode, CodeGenConfig, CodeGenType } from './utils/codeGenerator';
-import EnhancedCodeGenerator from './components/EnhancedCodeGenerator';
-import MockServerManager from './components/MockServerManager';
 import { ApiRequest, HistoryItem } from './types';
+
+// Lazy load heavy components
+const EnhancedCodeGenerator = React.lazy(() => import('./components/EnhancedCodeGenerator'));
+const MockServerManager = React.lazy(() => import('./components/MockServerManager'));
 
 const { Header } = Layout;
 const { Option } = Select;
@@ -87,8 +88,6 @@ function App() {
     setIsTemplatesModalVisible,
     isThemeSettingsVisible,
     setIsThemeSettingsVisible,
-    isTourVisible,
-    setIsTourVisible,
     isMockServerManagerVisible,
     setIsMockServerManagerVisible,
     showMoodSelector,
@@ -366,7 +365,6 @@ function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: 'var(--theme-text)' }}>Rock API Client</span>
           <div data-tour="header-actions">
-            <TourButton onStartTour={() => setIsTourVisible(true)} />
             <button
               onClick={() => {
                 if (isBookmarked(activeRequest)) {
@@ -537,14 +535,10 @@ function App() {
         onClose={() => setIsThemeSettingsVisible(false)}
       />
       
-      {/* App Tour */}
-      <AppTour
-        isOpen={isTourVisible}
-        onClose={() => setIsTourVisible(false)}
-      />
       
       {/* Enhanced Code Generator Modal */}
-      <EnhancedCodeGenerator
+      <Suspense fallback={<Spin size="large" style={{ display: 'flex', justifyContent: 'center', padding: '50px' }} />}>
+        <EnhancedCodeGenerator
         visible={isEnhancedCodeGenVisible}
         onClose={() => setIsEnhancedCodeGenVisible(false)}
         config={{
@@ -569,6 +563,7 @@ function App() {
           activeEnvVars: envState.items.find(env => env.key === envState.activeKey)?.variables || {}
         }}
       />
+      </Suspense>
       
       {/* Mood Selector - First Launch */}
       <MoodSelector
@@ -589,11 +584,11 @@ function App() {
         style={{ top: 20 }}
         footer={null}
       >
-        <MockServerManager />
+        <Suspense fallback={<Spin size="large" style={{ display: 'flex', justifyContent: 'center', padding: '50px' }} />}>
+          <MockServerManager />
+        </Suspense>
       </Modal>
 
-      {/* Tour completion element (hidden) */}
-      <div data-tour="tour-complete" style={{ display: 'none' }} />
     </Layout>
     </>
   );

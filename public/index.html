@@ -5,6 +5,12 @@
     <title>Rock Api Client</title>
   </head>
   <body>
+    <!-- Global polyfill for Node.js compatibility -->
+    <script>
+      if (typeof global === 'undefined') {
+        window.global = globalThis;
+      }
+    </script>
     <!-- This is the root div where our React app will be mounted -->
     <div id="root"></div>
   </body>

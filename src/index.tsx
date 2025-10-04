@@ -1,3 +1,8 @@
+// Global polyfill for Node.js compatibility
+if (typeof global === 'undefined') {
+  (window as any).global = globalThis;
+}
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
