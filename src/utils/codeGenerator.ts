@@ -4,7 +4,9 @@ import { substituteTemplate } from '../hooks/useEnvironments';
 const safeJsonStringify = (body: string, rawBodyType: string, quoteChar: string = '"'): string => {
   if (rawBodyType === 'json') {
     try {
-      return safeJsonStringify(body, rawBodyType);
+      // Try to parse and re-stringify to ensure proper formatting
+      const parsed = JSON.parse(body);
+      return JSON.stringify(parsed);
     } catch (e) {
       // If JSON parsing fails, escape the string and return as string literal
       const escapedBody = body.replace(new RegExp(quoteChar, 'g'), `\\${quoteChar}`);
@@ -602,9 +604,15 @@ const generateCSharpCode = (
   body: string,
   rawBodyType: string
 ): string => {
+  const httpMethod = method.toUpperCase();
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
     ? `var content = new StringContent(${safeJsonStringify(body, rawBodyType)}, Encoding.UTF8, "application/json");` 
     : '';
+  
+  // Format headers properly
+  const headersCode = Object.entries(headers)
+    .map(([k, v]) => `        request.Headers.Add("${k}", "${v}");`)
+    .join('\n');
   
   return `using System;
 using System.Net.Http;
@@ -624,9 +632,9 @@ public class ApiClient
     {
         var url = "${url}";
         
-        using var request = new HttpRequestMessage(HttpMethod.${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}, url);
+        using var request = new HttpRequestMessage(HttpMethod.${httpMethod}, url);
         
-        ${Object.entries(headers).map(([k, v]) => `request.Headers.Add("${k}", "${v}");`).join('\n        ')}
+${headersCode}
         
         ${bodyParam ? `${bodyParam}\n        request.Content = content;` : ''}
         
@@ -658,7 +666,7 @@ const generatePhpCode = (
   rawBodyType: string
 ): string => {
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `'body' => ${safeJsonStringify(body, rawBodyType, "'")},` 
+    ? `'content' => ${safeJsonStringify(body, rawBodyType, "'")},` 
     : '';
   
   return `<?php
@@ -695,8 +703,9 @@ const generateRubyCode = (
   body: string,
   rawBodyType: string
 ): string => {
+  const httpMethod = method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
   const bodyParam = body && method !== 'GET' && method !== 'DELETE' 
-    ? `body: ${safeJsonStringify(body, rawBodyType, "'")},` 
+    ? `request.body = ${safeJsonStringify(body, rawBodyType, "'")}` 
     : '';
   
   return `require 'net/http'
@@ -707,10 +716,10 @@ url = URI("${url}")
 http = Net::HTTP.new(url.host, url.port)
 http.use_ssl = true if url.scheme == 'https'
 
-request = Net::HTTP::${method.charAt(0).toUpperCase() + method.slice(1).toLowerCase()}.new(url)
+request = Net::HTTP::${httpMethod}.new(url)
 ${Object.entries(headers).map(([k, v]) => `request['${k}'] = '${v}'`).join('\n')}
 
-${bodyParam ? `request.body = ${safeJsonStringify(body, rawBodyType, "'")}` : ''}
+${bodyParam ? `${bodyParam}` : ''}
 
 begin
   response = http.request(request)

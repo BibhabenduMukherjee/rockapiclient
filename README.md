@@ -23,6 +23,7 @@
 
 ### 🚀 Core API Testing
 - **HTTP Methods**: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- **WebSocket Support**: Real-time WebSocket connections with message handling
 - **Request Builder**: Intuitive URL, query parameters, headers, and body composition
 - **Multiple Body Types**: JSON, form-data, URL-encoded, raw text, XML, HTML
 - **Real-time Validation**: JSON syntax checking with error highlighting
@@ -35,28 +36,40 @@
 - **Request Templates**: Pre-built templates for REST APIs, e-commerce, social media, and cloud services
 - **Enhanced Notifications**: Smart notifications with retry options and actions
 - **Theme System**: 4 built-in themes (Light, Dark, High Contrast, Blue Ocean) + custom color customization
-- **App Tour**: Interactive onboarding for new users
+- **Mood Selector**: Choose UI themes based on your working mood
+- **Custom Buttons**: Theme-adaptive button components with consistent styling
 
 ### 🔐 Authentication & Security
 - **Multiple Auth Types**: Basic Auth, Bearer Token, JWT
 - **Environment Variables**: Secure variable substitution with template support
 - **Request/Response Security**: Safe handling of sensitive data
 
+### 🏗️ Mock Server Management
+- **HTTP Mock Servers**: Create local HTTP servers with custom routes
+- **WebSocket Mock Servers**: Real-time WebSocket server simulation
+- **Route Configuration**: Define custom endpoints with status codes and responses
+- **Message Handlers**: Configure WebSocket message handling and responses
+- **Server Persistence**: Save and reload server configurations
+- **Real-time Logs**: Monitor server activity and message flow
+- **Array Templates**: Pre-built response templates for common use cases
+
 ### 📊 Advanced Features
 - **Request Comparison**: Side-by-side diff of current vs historical requests
 - **Request Duplication**: Clone and modify existing requests
-- **Code Generation**: Export requests as cURL, fetch, axios, HTTPie
+- **Code Generation**: Export requests as cURL, fetch, axios, HTTPie with syntax highlighting
 - **Collection Management**: Organize requests into collections with CRUD operations
 - **Environment Management**: Multiple environments with variable substitution
-- **Bookmarks**: Save and organize favorite requests
+- **Bookmarks**: Save and organize favorite requests with tagging
 - **Response Analytics**: Performance metrics and response time charts
+- **Data Transformation**: Transform response data with various operations
 
 ### 🎯 Developer Productivity
 - **Request Persistence**: Automatic saving of request configurations
 - **History Search**: Advanced filtering by method, status, date, URL patterns
 - **Bulk Operations**: Multi-select operations on history items
 - **Import/Export**: Collection sharing via JSON format
-- **Mood Selector**: Customize UI based on your working mood
+- **Performance Optimization**: Lazy loading and code splitting for better performance
+- **Bundle Optimization**: Optimized webpack configuration for smaller app size
 
 ## 🚀 Getting Started
 
@@ -144,9 +157,10 @@ Customize:
 - **Frontend**: React 18 + TypeScript
 - **Desktop**: Electron (main process + renderer)
 - **UI Framework**: Ant Design 5.x
-- **Bundling**: Webpack 5
+- **Bundling**: Webpack 5 with optimization (code splitting, tree shaking, minification)
 - **Styling**: CSS Variables + Custom CSS
 - **State Management**: React Hooks + Context
+- **Performance**: Lazy loading, bundle optimization, highlight.js for syntax highlighting
 
 ### Project Structure
 
@@ -155,24 +169,50 @@ src/
 ├── components/           # React components
 │   ├── AuthorizationTab.tsx
 │   ├── BodyTab.tsx
+│   ├── BookmarksPanel.tsx
 │   ├── CommandPalette.tsx
+│   ├── CustomButton.tsx
+│   ├── DataTransformation.tsx
+│   ├── EnhancedCodeGenerator.tsx
 │   ├── EnhancedNotifications.tsx
 │   ├── HeadersTab.tsx
 │   ├── HistorySearch.tsx
+│   ├── MockServerManager.tsx
+│   ├── MoodSelector.tsx
+│   ├── Preloader.tsx
 │   ├── RequestDiff.tsx
 │   ├── RequestDuplication.tsx
+│   ├── RequestPanel.tsx
+│   ├── RequestTabs.tsx
 │   ├── RequestTemplates.tsx
+│   ├── ResponseAnalytics.tsx
+│   ├── ResponseTimeChart.tsx
 │   ├── Sidebar.tsx
-│   └── ThemeSettings.tsx
+│   ├── ThemeSettings.tsx
+│   ├── VerticalSidebar.tsx
+│   ├── WebSocketTabs.tsx
+│   └── sidebar/
+│       └── CollectionsTab.tsx
 ├── hooks/               # Custom React hooks
+│   ├── useAppState.ts
+│   ├── useBookmarks.ts
 │   ├── useCollections.ts
 │   ├── useEnvironments.ts
+│   ├── useFirstLaunch.ts
+│   ├── useFocusManagement.ts
 │   ├── useKeyboardShortcuts.ts
+│   ├── useModals.ts
+│   ├── usePerformanceOptimization.ts
+│   ├── usePreloader.ts
 │   └── useTheme.ts
 ├── utils/               # Utility functions
 │   ├── codeGenerator.ts
+│   ├── dataTransformation.ts
 │   └── requestSender.ts
-├── types.ts             # TypeScript type definitions
+├── types/               # TypeScript type definitions
+│   ├── electron.d.ts
+│   └── RequestPanel.ts
+├── types.ts             # Main type definitions
 ├── App.tsx              # Main application component
 ├── index.tsx            # Application entry point
 ├── index.css            # Global styles
