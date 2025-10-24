@@ -167,7 +167,7 @@ export default function WebSocketTabs({
                       style={{ 
                         margin: 0, 
                         whiteSpace: 'pre-wrap',
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                         fontSize: '13px'
                       }}
                     >

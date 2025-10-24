@@ -268,7 +268,7 @@ export default function BodyTab({
         onChange={(e) => updateConfig({ rawBody: e.target.value })}
         placeholder={`Enter ${config.rawBodyType} content...`}
         rows={12}
-        style={{ fontFamily: config.rawBodyType === 'json' ? 'monospace' : 'inherit' }}
+        style={{ fontFamily: config.rawBodyType === 'json' ? 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace' : 'inherit' }}
       />
     </div>
   );

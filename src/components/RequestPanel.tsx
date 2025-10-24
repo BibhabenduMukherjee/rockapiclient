@@ -445,7 +445,7 @@ export default function RequestPanel({
                         background: 'var(--theme-background)', 
                         padding: 12, 
                         borderRadius: 6,
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                         fontSize: '12px',
                         height: '200px',
                         overflowY: 'auto',
@@ -517,7 +517,7 @@ export default function RequestPanel({
                           readOnly 
                           placeholder="Response will appear here..."
                           style={{ 
-                            fontFamily: 'monospace',
+                            fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                             fontSize: '12px',
                             height: '100%',
                             resize: 'none',

@@ -1,0 +1,216 @@
+name: Build and Sign Electron App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Import Code Signing Certificate
+      uses: Apple-Actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ secrets.CERTIFICATE_P12_BASE64 }}
+        p12-password: ${{ secrets.CERTIFICATE_PASSWORD }}
+        
+    - name: Import App Store Connect API Key
+      uses: Apple-Actions/download-provisioning-profiles@v1
+      with:
+        bundle-id: com.codeaum.rockapiclient
+        issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+        api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+        api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        
+    - name: Build and Sign macOS app
+      run: npm run dist:mac
+      env:
+        CSC_LINK: ${{ secrets.CERTIFICATE_P12_BASE64 }}
+        CSC_KEY_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        NOTARIZE: true
+        
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-signed
+        path: |
+          dist/*.dmg
+          dist/*.zip
+        retention-days: 30
+
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Import Code Signing Certificate
+      uses: Apple-Actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ secrets.WINDOWS_CERTIFICATE_P12_BASE64 }}
+        p12-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        
+    - name: Build and Sign Windows app
+      run: npm run dist:win
+      env:
+        CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_P12_BASE64 }}
+        CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-signed
+        path: |
+          dist/*.exe
+          dist/*.zip
+        retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --legacy-peer-deps
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Build Linux app
+      run: npm run dist:linux
+        
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-unsigned
+        path: |
+          dist/*.AppImage
+          dist/*.deb
+        retention-days: 30
+
+  release:
+    needs: [build-macos, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+        
+    - name: Get version from tag
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: RockApiClient ${{ steps.get_version.outputs.version }}
+        body: |
+          ## 🚀 RockApiClient ${{ steps.get_version.outputs.version }}
+          
+          ### ✨ What's New
+          - Code signed and notarized for macOS
+          - Code signed for Windows
+          - Enhanced security and trust
+          
+          ### 📥 Downloads
+          
+          **macOS (Signed & Notarized):**
+          - Download the `.dmg` file for easy installation
+          - No security warnings or "damaged app" errors
+          
+          **Windows (Code Signed):**
+          - Download the `.exe` installer for easy setup
+          - No SmartScreen warnings
+          
+          **Linux:**
+          - Download the `.AppImage` for universal compatibility
+          - Or download the `.deb` package for Debian/Ubuntu
+          
+          ### 🛠️ Installation
+          
+          **macOS:**
+          1. Download the `.dmg` file
+          2. Open the downloaded file
+          3. Drag RockApiClient to Applications folder
+          4. No need to bypass security settings!
+          
+          **Windows:**
+          1. Download the `.exe` installer
+          2. Run the installer and follow the setup wizard
+          3. No SmartScreen warnings!
+          
+          **Linux:**
+          1. For AppImage: Make executable and run
+          2. For .deb: Install with `sudo dpkg -i rockapiclient.deb`
+        draft: false
+        prerelease: false
+        files: |
+          artifacts/macos-signed/*.dmg
+          artifacts/macos-signed/*.zip
+          artifacts/windows-signed/*.exe
+          artifacts/windows-signed/*.zip
+          artifacts/linux-unsigned/*.AppImage
+          artifacts/linux-unsigned/*.deb

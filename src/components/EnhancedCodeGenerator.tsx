@@ -194,7 +194,7 @@ export default function EnhancedCodeGenerator({ visible, onClose, config }: Enha
                   padding: '16px',
                   background: '#1e1e1e',
                   color: '#d4d4d4',
-                  fontFamily: 'Fira Code, Monaco, Consolas, monospace',
+                  fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                   fontSize: '13px',
                   lineHeight: '1.5',
                   whiteSpace: 'pre-wrap',

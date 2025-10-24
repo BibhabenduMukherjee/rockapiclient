@@ -1134,7 +1134,7 @@ const ServerCreationForm: React.FC<{
                         placeholder='{"message": "Hello World", "status": "success"}'
                         rows={4}
                         style={{ 
-                          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                          fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                           fontSize: '12px',
                           lineHeight: '1.4',
                           background: 'var(--theme-background)',
@@ -1200,7 +1200,7 @@ const ServerCreationForm: React.FC<{
                     }}
                     placeholder='{"echo": "Message received"}'
                     rows={2}
-                    style={{ fontFamily: 'monospace' }}
+                    style={{ fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace' }}
                   />
                 </Col>
                 <Col span={3}>
