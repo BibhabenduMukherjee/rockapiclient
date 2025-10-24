@@ -272,7 +272,7 @@ export default function BookmarksPanel({
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                         background: 'var(--theme-surface)',
                         padding: '4px 8px',
                         borderRadius: '4px',

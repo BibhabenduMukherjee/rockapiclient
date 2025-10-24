@@ -58,7 +58,14 @@
         }
       ],
       "category": "public.app-category.utilities",
-      "icon": "public/icon.icns"
+      "icon": "public/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": {
+        "teamId": "YOUR_APPLE_TEAM_ID"
+      }
     },
     "win": {
       "target": [
@@ -75,7 +82,11 @@
           ]
         }
       ],
-      "icon": "public/icon.ico"
+      "icon": "public/icon.ico",
+      "certificateFile": "build/certificate.p12",
+      "certificatePassword": "",
+      "signingHashAlgorithms": ["sha256"],
+      "sign": "build/sign.js"
     },
     "linux": {
       "target": [

@@ -305,7 +305,7 @@ export default function DataTransformation({
                       placeholder="Transformed data will appear here..."
                       style={{ 
                         height: '300px',
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono, Fira Code, Cascadia Code, SF Mono, Monaco, Inconsolata, Roboto Mono, Source Code Pro, monospace',
                         fontSize: '12px'
                       }}
                     />
