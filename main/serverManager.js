@@ -10,7 +10,7 @@ class ServerManager {
     this.servers = new Map(); // port -> server instance
     this.configs = new Map(); // port -> server config
     this.logs = new Map(); // port -> logs array
-    this.configFilePath = configFilePath || path.join(__dirname, '../server-configs.json'); // fallback for development
+    this.configFilePath = configFilePath; // Use the provided path from main.js
     this.setupIPC();
     // Load configurations asynchronously
     this.loadConfigurations().then(configs => {
